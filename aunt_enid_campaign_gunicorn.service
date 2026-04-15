@@ -1,0 +1,19 @@
+[Unit]
+Description=gunicorn daemon for Aunt Enid Campaign Django app
+After=network.target
+
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=/home/ubuntu/tr
+Environment="PATH=/home/ubuntu/tr/.venv/bin"
+ExecStart=/home/ubuntu/tr/.venv/bin/gunicorn \
+          --config /home/ubuntu/tr/gunicorn_config.py \
+          aunt_enid_campaign.wsgi:application
+
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+

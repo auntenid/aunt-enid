@@ -1,0 +1,159 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ site_config.site_name }}{% endblock %}</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="{% block description %}{{ site_config.tagline }}{% endblock %}">
+    <meta name="keywords" content="Aunt Enid, Enid Origumisiriza Atuheire, MP aspirant, Kabale District, Uganda, women leadership, community development">
+    <meta name="author" content="Aunt Enid Campaign Team">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="{% block og_title %}{{ site_config.site_name }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ site_config.tagline }}{% endblock %}">
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:image" content="{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/enid1.jpg' %}{% endblock %}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="{% block og_image_alt %}Aunt Enid - Woman MP Aspirant Kabale District{% endblock %}">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}{{ site_config.site_name }}{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}{{ site_config.tagline }}{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/enid1.jpg' %}{% endblock %}">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/apple-touch-icon.png' %}">
+    
+    <!-- Stylesheets -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2><a href="{% url 'website:home' %}" style="text-decoration: none; color: #FFD700;">{{ site_config.site_name }}</a></h2>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="{% url 'website:home' %}#home">Home</a></li>
+                <li><a href="{% url 'website:about' %}">About</a></li>
+                <li><a href="{% url 'website:manifesto' %}">Manifesto</a></li>
+                <li><a href="{% url 'website:news_list' %}">News</a></li>
+                <li><a href="{% url 'website:kabale' %}">Kabale District</a></li>
+                <li><a href="{% url 'website:contact' %}">Contact</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>{{ site_config.site_name }}</h3>
+                    <p>{{ site_config.footer_description }}</p>
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <a href="mailto:auntenidoa@gmail.com">auntenidoa@gmail.com</a>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            <a href="tel:+256764195740">0764195740</a>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fab fa-whatsapp"></i>
+                            <a href="https://wa.me/256705357149" target="_blank">+256 705 357149</a>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>{{ site_config.location }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="{% url 'website:home' %}">Home</a></li>
+                        <li><a href="{% url 'website:about' %}">About</a></li>
+                        <li><a href="{% url 'website:manifesto' %}">Manifesto</a></li>
+                        <li><a href="{% url 'website:news_list' %}">News</a></li>
+                        <li><a href="{% url 'website:kabale' %}">Kabale District</a></li>
+                        <li><a href="{% url 'website:contact' %}">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Connect With Us</h4>
+                    <div class="social-links">
+                        {% if site_config.facebook_url %}
+                        <a href="{{ site_config.facebook_url }}" target="_blank" title="Facebook">
+                            <i class="fab fa-facebook"></i>
+                            <span>Facebook</span>
+                        </a>
+                        {% endif %}
+                        {% if site_config.twitter_url %}
+                        <a href="{{ site_config.twitter_url }}" target="_blank" title="Twitter">
+                            <i class="fab fa-twitter"></i>
+                            <span>Twitter</span>
+                        </a>
+                        {% endif %}
+                        {% if site_config.instagram_url %}
+                        <a href="{{ site_config.instagram_url }}" target="_blank" title="Instagram">
+                            <i class="fab fa-instagram"></i>
+                            <span>Instagram</span>
+                        </a>
+                        {% endif %}
+                        <a href="https://wa.me/256705357149" target="_blank" title="WhatsApp">
+                            <i class="fab fa-whatsapp"></i>
+                            <span>WhatsApp</span>
+                        </a>
+                        {% if site_config.tiktok_url %}
+                        <a href="{{ site_config.tiktok_url }}" target="_blank" title="TikTok">
+                            <i class="fab fa-tiktok"></i>
+                            <span>TikTok</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div class="footer-bottom-content">
+                    <p>&copy; {{ site_config.copyright_text }}</p>
+                    <div class="admin-access">
+                        <a href="/admin/" class="admin-link">
+                            <i class="fas fa-cog"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="{% static 'js/security.js' %}"></script>
+    <script src="{% static 'js/script.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

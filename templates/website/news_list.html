@@ -1,0 +1,78 @@
+{% extends 'website/base.html' %}
+{% load static %}
+
+{% block title %}News & Updates - {{ site_config.site_name }}{% endblock %}
+
+{% block content %}
+<!-- News Section -->
+<section class="news" style="padding-top: 120px;">
+    <div class="container">
+        <div class="section-header">
+            <h2>Latest News & Updates</h2>
+            <p>Stay informed about Aunt Enid's campaign activities and community initiatives</p>
+        </div>
+        
+        {% if articles %}
+        <div class="news-grid">
+            {% for article in articles %}
+            <article class="news-item {% if article.is_featured %}dynamic-story{% endif %}">
+                <div class="news-image">
+                    {% if article.featured_image %}
+                    <img src="{{ article.featured_image.url }}" alt="{{ article.image_alt_text|default:article.title }}" class="news-photo">
+                    {% else %}
+                    <img src="{% static 'images/enid1.jpg' %}" alt="{{ article.title }}" class="news-photo">
+                    {% endif %}
+                    <div class="news-date">
+                        <span class="day">{{ article.published_date|date:"d" }}</span>
+                        <span class="month">{{ article.published_date|date:"M" }}</span>
+                    </div>
+                </div>
+                <div class="news-content">
+                    <h3>{{ article.title }}</h3>
+                    <p class="news-excerpt">{{ article.excerpt }}</p>
+                    <div class="news-meta">
+                        <span class="news-category">{{ article.get_category_display }}</span>
+                        <span class="news-location"><i class="fas fa-map-marker-alt"></i> {{ article.location }}</span>
+                    </div>
+                    <div class="news-actions">
+                        <a href="{{ article.get_absolute_url }}" class="read-more-btn">
+                            <i class="fas fa-book-open"></i> Read Story
+                        </a>
+                        <button class="share-btn" onclick="shareDirect('{{ request.scheme }}://{{ request.get_host }}{{ article.get_absolute_url }}', '{{ article.title|escapejs }}', '{{ article.excerpt|escapejs }}')">
+                            <i class="fas fa-share-alt"></i> Share
+                        </button>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="pagination" style="text-align: center; margin-top: 40px;">
+            {% if page_obj.has_previous %}
+                <a href="?page=1" class="btn btn-secondary" style="margin-right: 10px;">First</a>
+                <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-secondary" style="margin-right: 10px;">Previous</a>
+            {% endif %}
+            
+            <span class="current-page" style="margin: 0 20px; color: #333; font-weight: 600;">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+            
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="btn btn-secondary" style="margin-left: 10px;">Next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-secondary" style="margin-left: 10px;">Last</a>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <div class="no-stories">
+            <i class="fas fa-newspaper"></i>
+            <h3>No News Articles Yet</h3>
+            <p>Check back soon for the latest updates from Aunt Enid's campaign.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

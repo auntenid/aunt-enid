@@ -1,0 +1,31 @@
+{% extends 'website/base.html' %}
+{% load static %}
+
+{% block title %}My Manifesto - {{ site_config.site_name }}{% endblock %}
+
+{% block content %}
+<!-- Manifesto Section -->
+<section class="manifesto" style="padding-top: 120px;">
+    <div class="container">
+        <div class="section-header">
+            <h2>My Manifesto</h2>
+            <p>Building a stronger, more prosperous Kabale District together</p>
+        </div>
+        <div class="manifesto-grid">
+            {% for item in manifesto_items %}
+            <div class="manifesto-item">
+                <div class="manifesto-icon">
+                    <i class="fas fa-{{ item.icon }}"></i>
+                </div>
+                <h3>{{ item.title }}</h3>
+                <ul>
+                    {% for point in item.points %}
+                    <li>{{ point }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

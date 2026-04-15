@@ -1,0 +1,38 @@
+{% extends 'website/base.html' %}
+{% load static %}
+
+{% block title %}About Aunt Enid - {{ site_config.site_name }}{% endblock %}
+
+{% block content %}
+<!-- About Section -->
+<section class="about" style="padding-top: 120px;">
+    <div class="container">
+        <div class="section-header">
+            <h2>{{ site_config.about_title }}</h2>
+            <p>{{ site_config.about_subtitle }}</p>
+        </div>
+        <div class="about-content">
+            <div class="about-text">
+                <h3>Why I'm Running</h3>
+                <p>{{ site_config.why_running }}</p>
+                
+                <h3>My Vision</h3>
+                <p>{{ site_config.vision }}</p>
+                
+                <div class="core-values">
+                    <h3>Core Values</h3>
+                    <div class="values-grid">
+                        {% for value in core_values %}
+                        <div class="value-item">
+                            <i class="fas fa-{{ value.icon }}"></i>
+                            <h4>{{ value.title }}</h4>
+                            <p>{{ value.description }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

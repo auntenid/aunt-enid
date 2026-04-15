@@ -1,0 +1,34 @@
+{% extends 'website/base.html' %}
+{% load static %}
+
+{% block title %}Kabale District - {{ site_config.site_name }}{% endblock %}
+
+{% block content %}
+<!-- Kabale District Section -->
+<section class="kabale" style="padding-top: 120px;">
+    <div class="container">
+        <div class="section-header">
+            <h2>{{ site_config.kabale_title }}</h2>
+            <p>{{ site_config.kabale_subtitle }}</p>
+        </div>
+        <div class="kabale-content">
+            <div class="kabale-text">
+                <h3>Why Kabale Matters</h3>
+                <p>{{ site_config.kabale_description }}</p>
+                
+                <div class="kabale-features">
+                    {% for feature in kabale_features %}
+                    <div class="feature">
+                        <i class="fas fa-{{ feature.icon }}"></i>
+                        <div>
+                            <h4>{{ feature.title }}</h4>
+                            <p>{{ feature.description }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

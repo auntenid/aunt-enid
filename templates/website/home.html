@@ -1,0 +1,28 @@
+{% extends 'website/base.html' %}
+{% load static %}
+
+{% block title %}{{ site_config.site_name }} - {{ site_config.tagline }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section id="home" class="hero">
+    <div class="hero-content">
+        <div class="hero-text">
+            <h1>Enid Origumisiriza Atuheire</h1>
+            <h2>{{ site_config.tagline }}</h2>
+            <h3>{{ site_config.subtitle }}</h3>
+            <p class="hero-subtitle">{{ site_config.hero_description }}</p>
+            <div class="hero-buttons">
+                <a href="{% url 'website:manifesto' %}" class="btn btn-primary">Read My Manifesto</a>
+                <a href="{% url 'website:about' %}" class="btn btn-secondary">Learn More</a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <img src="{% static 'images/enid1.jpg' %}" alt="Aunt Enid" class="hero-photo">
+        </div>
+    </div>
+    <div class="scroll-indicator">
+        <i class="fas fa-chevron-down"></i>
+    </div>
+</section>
+{% endblock %}
