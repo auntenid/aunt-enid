@@ -24,7 +24,9 @@ urlpatterns = [
     path('', include('website.urls')),
 ]
 
-# Serve media files during development
+# Serve media files (in both DEBUG and production since we are not using S3)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Serve static files only in DEBUG (WhiteNoise handles them in production)
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

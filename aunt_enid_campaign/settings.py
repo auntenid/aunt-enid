@@ -133,9 +133,7 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # ========== Media Storage (local filesystem) ==========
+# Served via urls.py (django.conf.urls.static) in both DEBUG and production
+# since this project doesn't use S3. Works fine for a small site on Railway.
 MEDIA_ROOT = BASE_DIR / "media"
 MEDIA_URL = "/media/"
-
-# WhiteNoise: serve the media directory as well (treat it as a static root)
-# so uploaded images render in production without AWS/S3.
-WHITENOISE_ROOT = MEDIA_ROOT
