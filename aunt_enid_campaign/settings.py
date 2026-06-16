@@ -103,10 +103,17 @@ if DATABASE_URL:
         )
     }
 else:
+    # If no DATABASE_URL is set, but a Railway volume is attached, use SQLite in the volume
+    RAILWAY_VOLUME_PATH = os.getenv("RAILWAY_VOLUME_MOUNT_PATH")
+    if RAILWAY_VOLUME_PATH:
+        db_path = Path(RAILWAY_VOLUME_PATH) / "db.sqlite3"
+    else:
+        db_path = BASE_DIR / "db.sqlite3"
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'NAME': db_path,
         }
     }
 
@@ -226,5 +233,28 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 # ========== Media Storage (local filesystem) ==========
 # Served via urls.py (django.conf.urls.static) in both DEBUG and production
 # since this project doesn't use S3. Works fine for a small site on Railway.
-MEDIA_ROOT = BASE_DIR / "media"
 MEDIA_URL = "/media/"
+
+# Check if we are running on Railway with a volume attached
+RAILWAY_VOLUME_PATH = os.getenv("RAILWAY_VOLUME_MOUNT_PATH")
+if RAILWAY_VOLUME_PATH:
+    MEDIA_ROOT = Path(RAILWAY_VOLUME_PATH) / "media"
+    # Ensure media directory exists in volume
+    MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
+    
+    # Copy default media files from the repo to the volume if they are not already there
+    repo_media_dir = BASE_DIR / "media"
+    if repo_media_dir.exists() and repo_media_dir != MEDIA_ROOT:
+        import shutil
+        for root, dirs, files in os.walk(repo_media_dir):
+            rel_path = Path(root).relative_to(repo_media_dir)
+            dest_dir = MEDIA_ROOT / rel_path
+            dest_dir.mkdir(parents=True, exist_ok=True)
+            
+            for file in files:
+                src_file = Path(root) / file
+                dest_file = dest_dir / file
+                if not dest_file.exists():
+                    shutil.copy2(src_file, dest_file)
+else:
+    MEDIA_ROOT = BASE_DIR / "media"
