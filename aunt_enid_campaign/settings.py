@@ -20,31 +20,30 @@ SECRET_KEY = os.getenv(
 # DEBUG from environment (default True for local/dev). Set to 'False' in production.
 DEBUG = os.getenv("DJANGO_DEBUG", "True") == "True"
 
-# Hosts - allow from environment or use defaults
+# Hosts - allow from environment or use defaults (strictly auto-allows all hosts by default)
 _allowed = os.getenv("DJANGO_ALLOWED_HOSTS", "")
 ALLOWED_HOSTS = (
     [h.strip() for h in _allowed.split(",") if h.strip()]
     if _allowed
-    else [
-        'twiina.com',
-        'www.twiina.com',
-        'localhost',
-        '127.0.0.1',
-        '.railway.app',
-        '.up.railway.app',
-    ]
+    else ['*']
 )
 
-CSRF_TRUSTED_ORIGINS = [
-    'http://twiina.com',
-    'https://twiina.com',
-    'http://www.twiina.com',
-    'https://www.twiina.com',
-    'http://localhost',
-    'https://localhost',
-    'https://*.railway.app',
-    'https://*.up.railway.app',
-]
+# CSRF Trusted Origins - allow from environment or use defaults
+_csrf_allowed = os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "")
+CSRF_TRUSTED_ORIGINS = (
+    [o.strip() for o in _csrf_allowed.split(",") if o.strip()]
+    if _csrf_allowed
+    else [
+        'http://twiina.com',
+        'https://twiina.com',
+        'http://www.twiina.com',
+        'https://www.twiina.com',
+        'http://localhost',
+        'https://localhost',
+        'https://*.railway.app',
+        'https://*.up.railway.app',
+    ]
+)
 
 
 # Application definition
@@ -92,8 +91,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "aunt_enid_campaign.wsgi.application"
 
-# Database - use DATABASE_URL (Railway/Heroku) or fall back to sqlite
+# Database - use DATABASE_URL (Railway/Heroku), individual Postgres credentials, or fall back to sqlite
 DATABASE_URL = os.getenv("DATABASE_URL")
+DB_NAME = os.getenv("DB_NAME") or os.getenv("PGDATABASE") or os.getenv("POSTGRES_DB")
+DB_USER = os.getenv("DB_USER") or os.getenv("PGUSER") or os.getenv("POSTGRES_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD") or os.getenv("PGPASSWORD") or os.getenv("POSTGRES_PASSWORD")
+DB_HOST = os.getenv("DB_HOST") or os.getenv("PGHOST") or os.getenv("POSTGRES_HOST")
+DB_PORT = os.getenv("DB_PORT") or os.getenv("PGPORT") or os.getenv("POSTGRES_PORT")
+
 if DATABASE_URL:
     DATABASES = {
         'default': dj_database_url.parse(
@@ -102,8 +107,19 @@ if DATABASE_URL:
             conn_health_checks=True,
         )
     }
+elif DB_NAME and DB_USER:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': DB_NAME,
+            'USER': DB_USER,
+            'PASSWORD': DB_PASSWORD or '',
+            'HOST': DB_HOST or 'localhost',
+            'PORT': DB_PORT or '5432',
+        }
+    }
 else:
-    # If no DATABASE_URL is set, but a Railway volume is attached, use SQLite in the volume
+    # If no DATABASE_URL or Postgres credentials are set, but a Railway volume is attached, use SQLite in the volume
     RAILWAY_VOLUME_PATH = os.getenv("RAILWAY_VOLUME_MOUNT_PATH")
     if RAILWAY_VOLUME_PATH:
         db_path = Path(RAILWAY_VOLUME_PATH) / "db.sqlite3"
