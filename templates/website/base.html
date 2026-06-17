@@ -5,12 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ site_config.site_name }}{% endblock %}</title>
-    
+
     <!-- SEO Meta Tags -->
     <meta name="description" content="{% block description %}{{ site_config.tagline }}{% endblock %}">
     <meta name="keywords" content="Aunt Enid, Enid Origumisiriza Atuheire, MP aspirant, Kabale District, Uganda, women leadership, community development">
     <meta name="author" content="Aunt Enid Campaign Team">
-    
+
     <!-- Open Graph Meta Tags -->
     <meta property="og:title" content="{% block og_title %}{{ site_config.site_name }}{% endblock %}">
     <meta property="og:description" content="{% block og_description %}{{ site_config.tagline }}{% endblock %}">
@@ -20,23 +20,23 @@
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="{% block og_image_alt %}Aunt Enid - Woman MP Aspirant Kabale District{% endblock %}">
-    
+
     <!-- Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{% block twitter_title %}{{ site_config.site_name }}{% endblock %}">
     <meta name="twitter:description" content="{% block twitter_description %}{{ site_config.tagline }}{% endblock %}">
     <meta name="twitter:image" content="{% block twitter_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/enid1.jpg' %}{% endblock %}">
-    
+
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/apple-touch-icon.png' %}">
-    
+
     <!-- Stylesheets -->
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+
     {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -49,12 +49,35 @@
             <ul class="nav-menu">
                 <li><a href="{% url 'website:home' %}#home">Home</a></li>
                 <li><a href="{% url 'website:about' %}">About</a></li>
-                <li><a href="{% url 'website:manifesto' %}">Manifesto</a></li>
-                <li><a href="{% url 'website:news_list' %}">News</a></li>
+
+                <!-- Our Impact Dropdown -->
+                <li class="nav-dropdown">
+                    <a href="{% url 'website:impact_list' %}" class="nav-dropdown-toggle">
+                        Our Impact <i class="fas fa-chevron-down dropdown-arrow"></i>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{% url 'website:impact_list' %}"><i class="fas fa-hands-helping"></i> All Projects</a></li>
+                        {% for category in impact_categories %}
+                        <li><a href="{% url 'website:impact_list' %}?category={{ category.slug }}"><i class="fas fa-{{ category.icon }}"></i> {{ category.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </li>
+
+                <!-- Media Dropdown -->
+                <li class="nav-dropdown">
+                    <a href="{% url 'website:news_list' %}" class="nav-dropdown-toggle">
+                        Media <i class="fas fa-chevron-down dropdown-arrow"></i>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{% url 'website:news_list' %}"><i class="fas fa-newspaper"></i> News & Updates</a></li>
+                        <li><a href="{% url 'website:gallery_list' %}"><i class="fas fa-images"></i> Photo & Video Gallery</a></li>
+                    </ul>
+                </li>
+
                 <li><a href="{% url 'website:kabale' %}">Kabale District</a></li>
                 <li><a href="{% url 'website:contact' %}">Contact</a></li>
             </ul>
-            <div class="hamburger">
+            <div class="hamburger" id="hamburger-btn">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -98,8 +121,10 @@
                     <ul>
                         <li><a href="{% url 'website:home' %}">Home</a></li>
                         <li><a href="{% url 'website:about' %}">About</a></li>
-                        <li><a href="{% url 'website:manifesto' %}">Manifesto</a></li>
-                        <li><a href="{% url 'website:news_list' %}">News</a></li>
+                        <li><a href="https://www.nrm.ug/sites/default/files/2025-09/NRM%20Manifesto%202026-2031.pdf" target="_blank" rel="noopener">Read Manifesto</a></li>
+                        <li><a href="{% url 'website:impact_list' %}">Our Impact</a></li>
+                        <li><a href="{% url 'website:news_list' %}">News & Updates</a></li>
+                        <li><a href="{% url 'website:gallery_list' %}">Gallery</a></li>
                         <li><a href="{% url 'website:kabale' %}">Kabale District</a></li>
                         <li><a href="{% url 'website:contact' %}">Contact</a></li>
                     </ul>
@@ -114,9 +139,9 @@
                         </a>
                         {% endif %}
                         {% if site_config.twitter_url %}
-                        <a href="{{ site_config.twitter_url }}" target="_blank" title="Twitter">
+                        <a href="{{ site_config.twitter_url }}" target="_blank" title="Twitter / X">
                             <i class="fab fa-twitter"></i>
-                            <span>Twitter</span>
+                            <span>Twitter / X</span>
                         </a>
                         {% endif %}
                         {% if site_config.instagram_url %}

@@ -1,0 +1,201 @@
+{% extends 'website/base.html' %}
+{% load static %}
+
+{% block title %}Gallery - {{ site_config.site_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Gallery Lightbox */
+.gallery-lightbox {
+    display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+    background:rgba(0,0,0,0.93);z-index:9999;justify-content:center;align-items:center;
+}
+.gallery-lightbox.active { display:flex; }
+.lightbox-inner {
+    position:relative;max-width:92vw;max-height:90vh;display:flex;flex-direction:column;align-items:center;gap:16px;
+}
+.lightbox-inner img { max-width:90vw;max-height:70vh;border-radius:8px;object-fit:contain; }
+.lightbox-inner iframe { width:min(860px,90vw);height:min(480px,50vh);border-radius:8px;border:none; }
+.lightbox-close {
+    position:absolute;top:-40px;right:0;background:none;border:none;color:#fff;font-size:2rem;cursor:pointer;
+}
+.lightbox-caption { color:#ddd;font-size:15px;text-align:center;max-width:600px; }
+.lightbox-share { display:flex;gap:10px;flex-wrap:wrap;justify-content:center; }
+.lightbox-share a {
+    display:inline-flex;align-items:center;gap:6px;padding:6px 14px;
+    border-radius:6px;text-decoration:none;color:#fff;font-size:13px;
+}
+.gallery-grid {
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;
+}
+.gallery-card {
+    border-radius:12px;overflow:hidden;background:#fff;
+    box-shadow:0 2px 12px rgba(0,0,0,0.08);cursor:pointer;
+    transition:transform .2s,box-shadow .2s;
+}
+.gallery-card:hover { transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,0.14); }
+.gallery-card-thumb {
+    position:relative;width:100%;aspect-ratio:4/3;overflow:hidden;background:#111;
+}
+.gallery-card-thumb img { width:100%;height:100%;object-fit:cover;display:block; }
+.gallery-card-thumb .video-badge {
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+}
+.video-badge i { font-size:3rem;color:rgba(255,255,255,0.9);filter:drop-shadow(0 2px 6px rgba(0,0,0,.5)); }
+.gallery-card-body { padding:14px; }
+.gallery-card-body h4 { font-size:15px;margin-bottom:6px;color:#1a1a2e; }
+.gallery-card-body p { font-size:13px;color:#666;margin:0; }
+.gallery-type-badge {
+    display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;
+    margin-bottom:6px;
+}
+.badge-image { background:#e8f5e9;color:#2E7D32; }
+.badge-video { background:#e3f2fd;color:#1565C0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="news" style="padding-top:120px;">
+    <div class="container">
+        <div class="section-header">
+            <h2>Photo & Video Gallery</h2>
+            <p>Moments from Aunt Enid's campaign, community activities, and events across Kabale District</p>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:40px;">
+            <a href="{% url 'website:gallery_list' %}"
+               class="btn {% if not active_category and not active_type %}btn-primary{% else %}btn-secondary{% endif %}" style="padding:8px 18px;font-size:14px;">
+                <i class="fas fa-border-all"></i> All
+            </a>
+            <a href="{% url 'website:gallery_list' %}?type=image"
+               class="btn {% if active_type == 'image' %}btn-primary{% else %}btn-secondary{% endif %}" style="padding:8px 18px;font-size:14px;">
+                <i class="fas fa-image"></i> Photos
+            </a>
+            <a href="{% url 'website:gallery_list' %}?type=video"
+               class="btn {% if active_type == 'video' %}btn-primary{% else %}btn-secondary{% endif %}" style="padding:8px 18px;font-size:14px;">
+                <i class="fas fa-video"></i> Videos
+            </a>
+            {% for category in categories %}
+            <a href="{% url 'website:gallery_list' %}?category={{ category.slug }}"
+               class="btn {% if active_category.slug == category.slug %}btn-primary{% else %}btn-secondary{% endif %}" style="padding:8px 18px;font-size:14px;">
+                {{ category.name }}
+            </a>
+            {% endfor %}
+        </div>
+
+        {% if items %}
+        <div class="gallery-grid">
+            {% for item in items %}
+            <div class="gallery-card"
+                 onclick="openLightbox('{{ item.id }}',
+                    '{{ item.title|escapejs }}',
+                    '{% if item.image %}{{ item.image.url }}{% endif %}',
+                    '{{ item.embed_url|escapejs }}',
+                    '{{ item.media_type }}',
+                    '{{ item.caption|escapejs }}',
+                    '{{ request.scheme }}://{{ request.get_host }}{% url 'website:gallery_list' %}?item={{ item.id }}'
+                )">
+                <div class="gallery-card-thumb">
+                    {% if item.image %}
+                    <img src="{{ item.image.url }}" alt="{{ item.title }}" loading="lazy">
+                    {% else %}
+                    <img src="{% static 'images/enid1.jpg' %}" alt="{{ item.title }}" loading="lazy">
+                    {% endif %}
+                    {% if item.media_type == 'video' %}
+                    <div class="video-badge"><i class="fas fa-play-circle"></i></div>
+                    {% endif %}
+                </div>
+                <div class="gallery-card-body">
+                    <span class="gallery-type-badge {% if item.media_type == 'video' %}badge-video{% else %}badge-image{% endif %}">
+                        <i class="fas fa-{% if item.media_type == 'video' %}video{% else %}image{% endif %}"></i>
+                        {% if item.media_type == 'video' %}Video{% else %}Photo{% endif %}
+                    </span>
+                    <h4>{{ item.title }}</h4>
+                    {% if item.caption %}<p>{{ item.caption|truncatechars:80 }}</p>{% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if items.has_other_pages %}
+        <div class="pagination" style="text-align:center;margin-top:40px;">
+            {% if items.has_previous %}
+            <a href="?{% if active_category %}category={{ active_category.slug }}&{% endif %}{% if active_type %}type={{ active_type }}&{% endif %}page=1" class="btn btn-secondary" style="margin-right:10px;">First</a>
+            <a href="?{% if active_category %}category={{ active_category.slug }}&{% endif %}{% if active_type %}type={{ active_type }}&{% endif %}page={{ items.previous_page_number }}" class="btn btn-secondary" style="margin-right:10px;">Previous</a>
+            {% endif %}
+            <span style="margin:0 20px;color:#333;font-weight:600;">Page {{ items.number }} of {{ items.paginator.num_pages }}</span>
+            {% if items.has_next %}
+            <a href="?{% if active_category %}category={{ active_category.slug }}&{% endif %}{% if active_type %}type={{ active_type }}&{% endif %}page={{ items.next_page_number }}" class="btn btn-secondary" style="margin-left:10px;">Next</a>
+            <a href="?{% if active_category %}category={{ active_category.slug }}&{% endif %}{% if active_type %}type={{ active_type }}&{% endif %}page={{ items.paginator.num_pages }}" class="btn btn-secondary" style="margin-left:10px;">Last</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="no-stories">
+            <i class="fas fa-images"></i>
+            <h3>No Gallery Items Yet</h3>
+            <p>Photos and videos will appear here. Add them via the Admin panel.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Lightbox Modal -->
+<div class="gallery-lightbox" id="galleryLightbox">
+    <div class="lightbox-inner">
+        <button class="lightbox-close" onclick="closeLightbox()" title="Close">&times;</button>
+        <div id="lightboxMedia"></div>
+        <div class="lightbox-caption" id="lightboxCaption"></div>
+        <div class="lightbox-share" id="lightboxShare"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openLightbox(id, title, imgUrl, embedUrl, mediaType, caption, pageUrl) {
+    var lb = document.getElementById('galleryLightbox');
+    var media = document.getElementById('lightboxMedia');
+    var cap = document.getElementById('lightboxCaption');
+    var share = document.getElementById('lightboxShare');
+
+    if (mediaType === 'video' && embedUrl) {
+        media.innerHTML = '<iframe src="' + embedUrl + '" allowfullscreen allow="autoplay"></iframe>';
+    } else if (imgUrl) {
+        media.innerHTML = '<img src="' + imgUrl + '" alt="' + title + '">';
+    } else {
+        media.innerHTML = '<p style="color:#aaa;">No media available.</p>';
+    }
+
+    cap.innerHTML = '<strong>' + title + '</strong>' + (caption ? '<br><span>' + caption + '</span>' : '');
+
+    var encodedTitle = encodeURIComponent(title);
+    var encodedUrl = encodeURIComponent(pageUrl);
+    share.innerHTML =
+        '<a href="https://wa.me/?text=' + encodedTitle + '%20' + encodedUrl + '" target="_blank" rel="noopener" style="background:#25D366;"><i class="fab fa-whatsapp"></i> WhatsApp</a>' +
+        '<a href="https://twitter.com/intent/tweet?text=' + encodedTitle + '&url=' + encodedUrl + '" target="_blank" rel="noopener" style="background:#000;"><i class="fab fa-x-twitter"></i> X</a>' +
+        '<a href="https://www.facebook.com/sharer/sharer.php?u=' + encodedUrl + '" target="_blank" rel="noopener" style="background:#1877F2;"><i class="fab fa-facebook"></i> Facebook</a>' +
+        '<a href="https://www.tiktok.com/share?url=' + encodedUrl + '" target="_blank" rel="noopener" style="background:#010101;"><i class="fab fa-tiktok"></i> TikTok</a>';
+
+    lb.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+    document.getElementById('galleryLightbox').classList.remove('active');
+    document.getElementById('lightboxMedia').innerHTML = '';
+    document.body.style.overflow = '';
+}
+
+document.getElementById('galleryLightbox').addEventListener('click', function(e) {
+    if (e.target === this) closeLightbox();
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeLightbox();
+});
+</script>
+{% endblock %}

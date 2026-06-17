@@ -1,0 +1,94 @@
+{% extends 'website/base.html' %}
+{% load static %}
+
+{% block title %}Our Impact - {{ site_config.site_name }}{% endblock %}
+
+{% block content %}
+<section class="news" style="padding-top: 120px;">
+    <div class="container">
+        <div class="section-header">
+            <h2>Our Impact in the Community</h2>
+            <p>Real projects. Real people. Real change in Kabale District.</p>
+        </div>
+
+        <!-- Category Filter Tabs -->
+        <div class="impact-filter-tabs" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:40px;">
+            <a href="{% url 'website:impact_list' %}"
+               class="btn {% if not active_category %}btn-primary{% else %}btn-secondary{% endif %}" style="padding:8px 20px;font-size:14px;">
+                <i class="fas fa-hands-helping"></i> All Projects
+            </a>
+            {% for category in categories %}
+            <a href="{% url 'website:impact_list' %}?category={{ category.slug }}"
+               class="btn {% if active_category.slug == category.slug %}btn-primary{% else %}btn-secondary{% endif %}" style="padding:8px 20px;font-size:14px;">
+                <i class="fas fa-{{ category.icon }}"></i> {{ category.name }}
+            </a>
+            {% endfor %}
+        </div>
+
+        {% if projects %}
+        <div class="news-grid">
+            {% for project in projects %}
+            <article class="news-item">
+                <div class="news-image">
+                    {% if project.image %}
+                    <img src="{{ project.image.url }}" alt="{{ project.title }}" class="news-photo">
+                    {% else %}
+                    <img src="{% static 'images/enid1.jpg' %}" alt="{{ project.title }}" class="news-photo">
+                    {% endif %}
+                    {% if project.category %}
+                    <div class="news-date">
+                        <span class="day"><i class="fas fa-{{ project.category.icon }}"></i></span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="news-content">
+                    {% if project.category %}
+                    <span class="news-category">{{ project.category.name }}</span>
+                    {% endif %}
+                    <h3>{{ project.title }}</h3>
+                    <p class="news-excerpt">{{ project.excerpt }}</p>
+                    <div class="news-meta">
+                        <span class="news-location"><i class="fas fa-map-marker-alt"></i> {{ project.location }}</span>
+                        {% if project.beneficiaries %}
+                        <span class="news-category"><i class="fas fa-users"></i> {{ project.beneficiaries }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="news-actions">
+                        <a href="{{ project.get_absolute_url }}" class="read-more-btn">
+                            <i class="fas fa-book-open"></i> Read Full Story
+                        </a>
+                        <button class="share-btn"
+                            onclick="shareDirect('{{ request.scheme }}://{{ request.get_host }}{{ project.get_absolute_url }}', '{{ project.title|escapejs }}', '{{ project.excerpt|escapejs }}')">
+                            <i class="fas fa-share-alt"></i> Share
+                        </button>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if projects.has_other_pages %}
+        <div class="pagination" style="text-align:center;margin-top:40px;">
+            {% if projects.has_previous %}
+            <a href="?{% if active_category %}category={{ active_category.slug }}&{% endif %}page=1" class="btn btn-secondary" style="margin-right:10px;">First</a>
+            <a href="?{% if active_category %}category={{ active_category.slug }}&{% endif %}page={{ projects.previous_page_number }}" class="btn btn-secondary" style="margin-right:10px;">Previous</a>
+            {% endif %}
+            <span style="margin:0 20px;color:#333;font-weight:600;">Page {{ projects.number }} of {{ projects.paginator.num_pages }}</span>
+            {% if projects.has_next %}
+            <a href="?{% if active_category %}category={{ active_category.slug }}&{% endif %}page={{ projects.next_page_number }}" class="btn btn-secondary" style="margin-left:10px;">Next</a>
+            <a href="?{% if active_category %}category={{ active_category.slug }}&{% endif %}page={{ projects.paginator.num_pages }}" class="btn btn-secondary" style="margin-left:10px;">Last</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="no-stories">
+            <i class="fas fa-hands-helping"></i>
+            <h3>No Projects Yet</h3>
+            <p>Check back soon for updates on community projects.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

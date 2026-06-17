@@ -1,8 +1,10 @@
-from django.core.management.base import BaseCommand
+﻿from django.core.management.base import BaseCommand
 from django.utils import timezone
 from website.models import (
-    NewsArticle, ManifestoItem, CoreValue, 
-    KabaleFeature, SiteConfiguration
+    NewsArticle, ManifestoItem, CoreValue,
+    KabaleFeature, SiteConfiguration,
+    ProjectCategory, ImpactProject,
+    GalleryCategory, GalleryItem,
 )
 
 
@@ -37,9 +39,9 @@ class Command(BaseCommand):
         )
         
         if created:
-            self.stdout.write('✓ Site configuration created')
+            self.stdout.write('[OK] Site configuration created')
         else:
-            self.stdout.write('✓ Site configuration already exists')
+            self.stdout.write('[OK] Site configuration already exists')
 
         # Create core values
         core_values_data = [
@@ -75,7 +77,7 @@ class Command(BaseCommand):
                 defaults=value_data
             )
             if created:
-                self.stdout.write(f'✓ Core value "{value.title}" created')
+                self.stdout.write(f'[OK] Core value "{value.title}" created')
 
         # Create manifesto items
         manifesto_data = [
@@ -159,7 +161,7 @@ class Command(BaseCommand):
                 defaults=manifesto_data_item
             )
             if created:
-                self.stdout.write(f'✓ Manifesto item "{manifesto.title}" created')
+                self.stdout.write(f'[OK] Manifesto item "{manifesto.title}" created')
 
         # Create Kabale features
         kabale_features_data = [
@@ -195,7 +197,7 @@ class Command(BaseCommand):
                 defaults=feature_data
             )
             if created:
-                self.stdout.write(f'✓ Kabale feature "{feature.title}" created')
+                self.stdout.write(f'[OK] Kabale feature "{feature.title}" created')
 
         # Create news articles
         news_articles_data = [
@@ -374,7 +376,99 @@ The forum concluded with concrete action plans for youth development initiatives
                 defaults=article_data
             )
             if created:
-                self.stdout.write(f'✓ News article "{article.title}" created')
+                self.stdout.write(f'[OK] News article "{article.title}" created')
+
+        # ==================== Project Categories ====================
+        project_categories_data = [
+            {'name': 'Women & Youth Empowerment', 'icon': 'female', 'order': 1,
+             'description': 'Programs uplifting women and young people through skills training and economic opportunities.'},
+            {'name': 'VSLAs & SACCOs', 'icon': 'piggy-bank', 'order': 2,
+             'description': 'Support for Village Savings and Loans Associations and financial cooperatives.'},
+            {'name': 'Health & Healthcare', 'icon': 'heartbeat', 'order': 3,
+             'description': 'Maternal health initiatives, medical support, and healthcare access improvements.'},
+            {'name': 'Agriculture & Tools', 'icon': 'seedling', 'order': 4,
+             'description': 'Distribution of seeds, tools, and modern farming support to local farmers.'},
+        ]
+        categories_map = {}
+        for cat_data in project_categories_data:
+            cat, created = ProjectCategory.objects.get_or_create(
+                name=cat_data['name'],
+                defaults=cat_data
+            )
+            categories_map[cat_data['name']] = cat
+            if created:
+                self.stdout.write(f'[OK] Project category "{cat.name}" created')
+
+        # ==================== Impact Projects ====================
+        import datetime
+        impact_projects_data = [
+            {
+                'title': 'Women Business Skills Training - Kabale Town',
+                'category_name': 'Women & Youth Empowerment',
+                'excerpt': 'Over 200 women received hands-on business skills training including financial management, marketing, and leadership to grow their small enterprises.',
+                'description': 'Aunt Enid organized a series of practical business skills workshops for women entrepreneurs across Kabale District. Participants received training in business planning, financial literacy, digital skills, and cooperative management. The program connected women to micro-financing opportunities and established peer mentorship networks to ensure long-term success.',
+                'location': 'Kabale Town, Kabale District',
+                'date_completed': datetime.date(2025, 8, 15),
+                'beneficiaries': '200+ women entrepreneurs',
+                'is_featured': True,
+            },
+            {
+                'title': 'VSLA Seed Capital Support - Bufundi Sub-county',
+                'category_name': 'VSLAs & SACCOs',
+                'excerpt': 'Provided seed capital and training to 15 Village Savings and Loans Associations, enabling over 400 families to access affordable credit for farming and small businesses.',
+                'description': 'In partnership with local community leaders, Aunt Enid facilitated the strengthening of 15 VSLAs in Bufundi Sub-county. Each group received seed capital injections, governance training, and bookkeeping support. This intervention has helped over 400 households break the cycle of predatory lending and build sustainable savings habits.',
+                'location': 'Bufundi Sub-county, Kabale District',
+                'date_completed': datetime.date(2025, 7, 10),
+                'beneficiaries': '400+ families across 15 VSLAs',
+                'is_featured': True,
+            },
+            {
+                'title': 'Sanitary Pad Distribution in Schools',
+                'category_name': 'Health & Healthcare',
+                'excerpt': 'Distributed sanitary pads to over 1,500 school girls across 12 schools, reducing absenteeism and keeping girls in class.',
+                'description': 'Period poverty remains a major reason why girls miss school in rural Uganda. Aunt Enid launched a campaign distributing sanitary pads to 1,500 school girls across 12 primary and secondary schools in Kabale District. The distribution was coupled with reproductive health education sessions, reducing period-related absenteeism and empowering girls with knowledge.',
+                'location': 'Various Schools, Kabale District',
+                'date_completed': datetime.date(2025, 9, 1),
+                'beneficiaries': '1,500+ school girls, 12 schools',
+                'is_featured': True,
+            },
+            {
+                'title': 'Irish Potato Seed Distribution - Rubanda',
+                'category_name': 'Agriculture & Tools',
+                'excerpt': 'Distributed certified Irish potato seeds and farming tools to 300 smallholder farmers to boost food production and incomes.',
+                'description': 'Kabale District is Uganda\'s leading potato producer. Aunt Enid supported 300 smallholder farming families with certified Irish potato seeds, hoes, and fertilizer. Farmers also received training on modern terrace farming, pest management, and market linkages. The project has significantly increased yields and household incomes in the supported communities.',
+                'location': 'Rubanda, Kabale District',
+                'date_completed': datetime.date(2025, 6, 20),
+                'beneficiaries': '300 farming families',
+                'is_featured': False,
+            },
+        ]
+
+        for proj_data in impact_projects_data:
+            cat_name = proj_data.pop('category_name')
+            cat = categories_map.get(cat_name)
+            proj_data['category'] = cat
+            project, created = ImpactProject.objects.get_or_create(
+                title=proj_data['title'],
+                defaults=proj_data
+            )
+            if created:
+                self.stdout.write(f'[OK] Impact project "{project.title}" created')
+
+        # ==================== Gallery Categories ====================
+        gallery_categories_data = [
+            {'name': 'Campaign Rallies', 'order': 1},
+            {'name': 'Community Outreach', 'order': 2},
+            {'name': 'Donation Drives', 'order': 3},
+            {'name': 'Official Events', 'order': 4},
+        ]
+        for gcat_data in gallery_categories_data:
+            gcat, created = GalleryCategory.objects.get_or_create(
+                name=gcat_data['name'],
+                defaults=gcat_data
+            )
+            if created:
+                self.stdout.write(f'[OK] Gallery category "{gcat.name}" created')
 
         self.stdout.write(
             self.style.SUCCESS('Successfully populated database with initial data!')

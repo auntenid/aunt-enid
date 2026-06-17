@@ -1,0 +1,105 @@
+{% extends 'website/base.html' %}
+{% load static %}
+
+{% block title %}{{ project.title }} - Our Impact - {{ site_config.site_name }}{% endblock %}
+{% block description %}{{ project.excerpt }}{% endblock %}
+
+{% block content %}
+<section style="padding-top: 120px; padding-bottom: 60px;">
+    <div class="container">
+        <!-- Breadcrumb -->
+        <p style="margin-bottom:20px;color:#666;font-size:14px;">
+            <a href="{% url 'website:home' %}" style="color:#2E7D32;">Home</a> &rsaquo;
+            <a href="{% url 'website:impact_list' %}" style="color:#2E7D32;">Our Impact</a> &rsaquo;
+            {{ project.title }}
+        </p>
+
+        <div class="article-layout" style="display:grid;grid-template-columns:1fr min(680px,100%);gap:40px;">
+            <div class="article-main" style="grid-column:1/-1;">
+
+                <!-- Project Hero Image -->
+                {% if project.image %}
+                <img src="{{ project.image.url }}" alt="{{ project.title }}"
+                     style="width:100%;max-height:450px;object-fit:cover;border-radius:12px;margin-bottom:30px;">
+                {% endif %}
+
+                <!-- Meta -->
+                <div class="news-meta" style="margin-bottom:16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;">
+                    {% if project.category %}
+                    <span class="news-category"><i class="fas fa-{{ project.category.icon }}"></i> {{ project.category.name }}</span>
+                    {% endif %}
+                    <span class="news-location"><i class="fas fa-map-marker-alt"></i> {{ project.location }}</span>
+                    {% if project.date_completed %}
+                    <span class="news-location"><i class="fas fa-calendar"></i> {{ project.date_completed|date:"F Y" }}</span>
+                    {% endif %}
+                    {% if project.beneficiaries %}
+                    <span class="news-category"><i class="fas fa-users"></i> {{ project.beneficiaries }}</span>
+                    {% endif %}
+                </div>
+
+                <h1 style="font-size:2rem;color:#1a1a2e;margin-bottom:20px;">{{ project.title }}</h1>
+                <div style="font-size:1.05rem;line-height:1.9;color:#444;white-space:pre-line;">{{ project.description }}</div>
+
+                <!-- Share Buttons -->
+                <div style="margin-top:40px;padding-top:24px;border-top:1px solid #eee;">
+                    <p style="font-weight:600;margin-bottom:12px;color:#333;"><i class="fas fa-share-alt"></i> Share this story:</p>
+                    <div style="display:flex;flex-wrap:wrap;gap:10px;">
+                        <a href="https://wa.me/?text={{ project.title|urlencode }}%20{{ request.scheme }}://{{ request.get_host }}{{ project.get_absolute_url }}"
+                           target="_blank" rel="noopener"
+                           style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:#25D366;color:#fff;border-radius:6px;text-decoration:none;font-size:14px;">
+                            <i class="fab fa-whatsapp"></i> WhatsApp
+                        </a>
+                        <a href="https://twitter.com/intent/tweet?text={{ project.title|urlencode }}&url={{ request.scheme }}://{{ request.get_host }}{{ project.get_absolute_url }}"
+                           target="_blank" rel="noopener"
+                           style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:#000;color:#fff;border-radius:6px;text-decoration:none;font-size:14px;">
+                            <i class="fab fa-x-twitter"></i> X (Twitter)
+                        </a>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.scheme }}://{{ request.get_host }}{{ project.get_absolute_url }}"
+                           target="_blank" rel="noopener"
+                           style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:#1877F2;color:#fff;border-radius:6px;text-decoration:none;font-size:14px;">
+                            <i class="fab fa-facebook"></i> Facebook
+                        </a>
+                        <a href="https://www.tiktok.com/share?url={{ request.scheme }}://{{ request.get_host }}{{ project.get_absolute_url }}"
+                           target="_blank" rel="noopener"
+                           style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:#010101;color:#fff;border-radius:6px;text-decoration:none;font-size:14px;">
+                            <i class="fab fa-tiktok"></i> TikTok
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Back Button -->
+                <div style="margin-top:30px;">
+                    <a href="{% url 'website:impact_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to All Projects
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Projects -->
+        {% if related_projects %}
+        <div style="margin-top:60px;">
+            <h3 style="margin-bottom:24px;color:#1a1a2e;">More Projects Like This</h3>
+            <div class="news-grid">
+                {% for rp in related_projects %}
+                <article class="news-item">
+                    <div class="news-image">
+                        {% if rp.image %}
+                        <img src="{{ rp.image.url }}" alt="{{ rp.title }}" class="news-photo">
+                        {% else %}
+                        <img src="{% static 'images/enid1.jpg' %}" alt="{{ rp.title }}" class="news-photo">
+                        {% endif %}
+                    </div>
+                    <div class="news-content">
+                        <h3>{{ rp.title }}</h3>
+                        <p class="news-excerpt">{{ rp.excerpt }}</p>
+                        <a href="{{ rp.get_absolute_url }}" class="read-more-btn"><i class="fas fa-arrow-right"></i> Read More</a>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
