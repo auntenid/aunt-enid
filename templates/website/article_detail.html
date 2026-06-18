@@ -11,8 +11,8 @@
 {% block og_url %}{{ request.build_absolute_uri }}{% endblock %}
 
 {% block og_image_tags %}
-    <meta property="og:image" content="{% if article.featured_image %}{{ request.scheme }}://{{ request.get_host }}{{ article.featured_image.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/enid1.jpg' %}{% endif %}">
-    <meta property="og:image:secure_url" content="{% if article.featured_image %}https://{{ request.get_host }}{{ article.featured_image.url }}{% else %}https://{{ request.get_host }}{% static 'images/enid1.jpg' %}{% endif %}">
+    <meta property="og:image" content="{% if og_image_url %}{{ og_image_url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/enid1.jpg' %}{% endif %}">
+    <meta property="og:image:secure_url" content="{% if og_image_url %}{{ og_image_url }}{% else %}https://{{ request.get_host }}{% static 'images/enid1.jpg' %}{% endif %}">
     <meta property="og:image:type" content="image/jpeg">
     <meta property="og:image:alt" content="{{ article.title }}">
 {% endblock %}
@@ -20,7 +20,7 @@
 {% block twitter_title %}{{ article.title }} - {{ site_config.site_name }}{% endblock %}
 {% block twitter_description %}{{ article.excerpt }}{% endblock %}
 {% block twitter_image_tags %}
-    <meta name="twitter:image" content="{% if article.featured_image %}{{ request.scheme }}://{{ request.get_host }}{{ article.featured_image.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/enid1.jpg' %}{% endif %}">
+    <meta name="twitter:image" content="{% if og_image_url %}{{ og_image_url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/enid1.jpg' %}{% endif %}">
     <meta name="twitter:image:alt" content="{{ article.title }}">
 {% endblock %}
 

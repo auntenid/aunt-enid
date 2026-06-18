@@ -11,8 +11,8 @@
 {% block og_url %}{{ item_url }}{% endblock %}
 
 {% block og_image_tags %}
-    <meta property="og:image" content="{% if og_image_url %}{{ og_image_url }}{% elif item.image %}{{ request.scheme }}://{{ request.get_host }}{{ item.image.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/enid1.jpg' %}{% endif %}">
-    <meta property="og:image:secure_url" content="{% if og_image_url %}{{ og_image_url }}{% elif item.image %}https://{{ request.get_host }}{{ item.image.url }}{% else %}https://{{ request.get_host }}{% static 'images/enid1.jpg' %}{% endif %}">
+    <meta property="og:image" content="{% if og_image_url %}{{ og_image_url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/enid1.jpg' %}{% endif %}">
+    <meta property="og:image:secure_url" content="{% if og_image_url %}{{ og_image_url }}{% else %}https://{{ request.get_host }}{% static 'images/enid1.jpg' %}{% endif %}">
     <meta property="og:image:type" content="image/jpeg">
     <meta property="og:image:alt" content="{{ item.title }}">
 {% endblock %}
@@ -20,7 +20,7 @@
 {% block twitter_title %}{{ item.title }}{% endblock %}
 {% block twitter_description %}{{ item.caption|default:"Watch this video from Aunt Enid's campaign" }}{% endblock %}
 {% block twitter_image_tags %}
-    <meta name="twitter:image" content="{% if og_image_url %}{{ og_image_url }}{% elif item.image %}{{ request.scheme }}://{{ request.get_host }}{{ item.image.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/enid1.jpg' %}{% endif %}">
+    <meta name="twitter:image" content="{% if og_image_url %}{{ og_image_url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/enid1.jpg' %}{% endif %}">
     <meta name="twitter:image:alt" content="{{ item.title }}">
 {% endblock %}
 

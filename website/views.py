@@ -42,8 +42,15 @@ def home(request):
 def article_detail(request, slug):
     """Individual article detail view"""
     article = get_object_or_404(NewsArticle, slug=slug, is_published=True)
+    
+    # Build absolute OG image URL (handles S3 or local paths cleanly)
+    og_image_url = None
+    if article.featured_image:
+        og_image_url = request.build_absolute_uri(article.featured_image.url)
+        
     context = {
         'article': article,
+        'og_image_url': og_image_url,
     }
     return render(request, 'website/article_detail.html', context)
 
@@ -187,11 +194,16 @@ def impact_detail(request, slug):
         is_active=True, category=project.category
     ).exclude(pk=project.pk)[:3]
 
+    # Build absolute OG image URL (handles S3 or local paths cleanly)
+    og_image_url = None
+    if project.image:
+        og_image_url = request.build_absolute_uri(project.image.url)
+
     context = {
         'project': project,
         'related_projects': related_projects,
+        'og_image_url': og_image_url,
     }
-
     return render(request, 'website/impact_detail.html', context)
 
 
