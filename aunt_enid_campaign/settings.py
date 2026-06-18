@@ -270,30 +270,64 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 # ========== Media Storage (S3 or local filesystem) ==========
-AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME", "auntenid")
-AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "eu-north-1")
+# Detect AWS or S3-compatible credentials (supports custom endpoints like MinIO/Tigris on Railway)
+AWS_ACCESS_KEY_ID = (
+    os.getenv("AWS_ACCESS_KEY_ID") 
+    or os.getenv("S3_ACCESS_KEY") 
+    or os.getenv("S3_KEY")
+    or os.getenv("MINIO_ROOT_USER")
+)
+AWS_SECRET_ACCESS_KEY = (
+    os.getenv("AWS_SECRET_ACCESS_KEY") 
+    or os.getenv("S3_SECRET_KEY") 
+    or os.getenv("S3_SECRET")
+    or os.getenv("MINIO_ROOT_PASSWORD")
+)
+AWS_STORAGE_BUCKET_NAME = (
+    os.getenv("AWS_STORAGE_BUCKET_NAME") 
+    or os.getenv("S3_BUCKET") 
+    or os.getenv("S3_BUCKET_NAME") 
+    or "auntenid"
+)
+AWS_S3_REGION_NAME = (
+    os.getenv("AWS_S3_REGION_NAME") 
+    or os.getenv("S3_REGION") 
+    or "eu-north-1"
+)
+AWS_S3_ENDPOINT_URL = (
+    os.getenv("AWS_S3_ENDPOINT_URL") 
+    or os.getenv("S3_ENDPOINT")
+)
 
 if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY:
-    # Use AWS S3 for media files
+    # Use S3-compatible storage
+    storages_options = {
+        "bucket_name": AWS_STORAGE_BUCKET_NAME,
+        "querystring_auth": False,
+        "file_overwrite": False,
+        "location": "media",
+    }
+    
+    if AWS_S3_REGION_NAME:
+        storages_options["region_name"] = AWS_S3_REGION_NAME
+        
+    if AWS_S3_ENDPOINT_URL:
+        storages_options["endpoint_url"] = AWS_S3_ENDPOINT_URL
+        # If custom endpoint is used, build MEDIA_URL using the endpoint url
+        endpoint_clean = AWS_S3_ENDPOINT_URL.rstrip("/")
+        MEDIA_URL = f"{endpoint_clean}/{AWS_STORAGE_BUCKET_NAME}/media/"
+    else:
+        MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/media/"
+
     STORAGES = {
         "default": {
             "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-            "OPTIONS": {
-                "bucket_name": AWS_STORAGE_BUCKET_NAME,
-                "region_name": AWS_S3_REGION_NAME,
-                "querystring_auth": False,
-                "file_overwrite": False,
-                "location": "media",
-            },
+            "OPTIONS": storages_options,
         },
         "staticfiles": {
             "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
         },
     }
-    # S3 Media URL
-    MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/media/"
 else:
     # Fallback to local filesystem
     MEDIA_URL = "/media/"
