@@ -346,58 +346,6 @@ class Command(BaseCommand):
             if created:
                 self.stdout.write(f'[OK] Project category "{cat.name}" created')
 
-        # ==================== Impact Projects ====================
-        import datetime
-        impact_projects_data = [
-            {
-                'title': 'Women Business Skills Training - Kabale Town',
-                'category_name': 'Women & Youth Empowerment',
-                'excerpt': 'Over 200 women received hands-on business skills training including financial management, marketing, and leadership.',
-                'description': 'Aunt Enid organized practical business skills workshops for women entrepreneurs across Kabale District. Participants received training in business planning, financial literacy, digital skills, and cooperative management.',
-                'location': 'Kabale Town, Kabale District',
-                'date_completed': datetime.date(2025, 8, 15),
-                'beneficiaries': '200+ women entrepreneurs',
-                'is_featured': True,
-            },
-            {
-                'title': 'VSLA Seed Capital Support - Bufundi Sub-county',
-                'category_name': 'VSLAs & SACCOs',
-                'excerpt': 'Provided seed capital and training to 15 Village Savings and Loans Associations, enabling over 400 families to access affordable credit.',
-                'description': 'Aunt Enid facilitated the strengthening of 15 VSLAs in Bufundi Sub-county. Each group received seed capital injections, governance training, and bookkeeping support.',
-                'location': 'Bufundi Sub-county, Kabale District',
-                'date_completed': datetime.date(2025, 7, 10),
-                'beneficiaries': '400+ families across 15 VSLAs',
-                'is_featured': True,
-            },
-            {
-                'title': 'Sanitary Pad Distribution in Schools',
-                'category_name': 'Health & Healthcare',
-                'excerpt': 'Distributed sanitary pads to over 1,500 school girls across 12 schools, reducing absenteeism and keeping girls in class.',
-                'description': 'Aunt Enid launched a campaign distributing sanitary pads to 1,500 school girls across 12 primary and secondary schools. The distribution was coupled with reproductive health education sessions.',
-                'location': 'Various Schools, Kabale District',
-                'date_completed': datetime.date(2025, 9, 1),
-                'beneficiaries': '1,500+ school girls, 12 schools',
-                'is_featured': True,
-            },
-            {
-                'title': 'Irish Potato Seed Distribution - Rubanda',
-                'category_name': 'Agriculture & Tools',
-                'excerpt': 'Distributed certified Irish potato seeds and farming tools to 300 smallholder farmers to boost food production and incomes.',
-                'description': "Aunt Enid supported 300 smallholder farming families with certified Irish potato seeds, hoes, and fertilizer. Farmers also received training on modern terrace farming, pest management, and market linkages.",
-                'location': 'Rubanda, Kabale District',
-                'date_completed': datetime.date(2025, 6, 20),
-                'beneficiaries': '300 farming families',
-                'is_featured': False,
-            },
-        ]
-
-        for proj_data in impact_projects_data:
-            cat_name = proj_data.pop('category_name')
-            proj_data['category'] = categories_map.get(cat_name)
-            project, created = ImpactProject.objects.get_or_create(title=proj_data['title'], defaults=proj_data)
-            if created:
-                self.stdout.write(f'[OK] Impact project "{project.title}" created')
-
         # ==================== Gallery Categories ====================
         gallery_categories_data = [
             {'name': 'Campaign Rallies',    'order': 1},
