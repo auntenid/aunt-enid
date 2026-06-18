@@ -266,18 +266,18 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 # ========== Media Storage (local filesystem) ==========
-# Served via urls.py (django.conf.urls.static) in both DEBUG and production
-# since this project doesn't use S3. Works fine for a small site on Railway.
+# Served via urls.py re_path in both DEBUG and production.
 MEDIA_URL = "/media/"
 
 # Check if we are running on Railway with a volume attached
 RAILWAY_VOLUME_PATH = os.getenv("RAILWAY_VOLUME_MOUNT_PATH")
 if RAILWAY_VOLUME_PATH:
     MEDIA_ROOT = Path(RAILWAY_VOLUME_PATH) / "media"
-    # Ensure media directory exists in volume
     MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
-    
-    # Copy default media files from the repo to the volume if they are not already there
+
+    # Always copy repo media files to the volume so seeded images are never lost
+    # after a redeploy.  User-uploaded files that only exist on the volume
+    # (not in the repo) are left untouched because os.walk only visits the repo tree.
     repo_media_dir = BASE_DIR / "media"
     if repo_media_dir.exists() and repo_media_dir != MEDIA_ROOT:
         import shutil
@@ -285,11 +285,10 @@ if RAILWAY_VOLUME_PATH:
             rel_path = Path(root).relative_to(repo_media_dir)
             dest_dir = MEDIA_ROOT / rel_path
             dest_dir.mkdir(parents=True, exist_ok=True)
-            
             for file in files:
                 src_file = Path(root) / file
                 dest_file = dest_dir / file
-                if not dest_file.exists():
-                    shutil.copy2(src_file, dest_file)
+                # Always overwrite repo-tracked files so latest version is used
+                shutil.copy2(src_file, dest_file)
 else:
-    MEDIA_ROOT = BASE_DIR / "media"
+    MEDIA_ROOT = BASE_DIR / "media"

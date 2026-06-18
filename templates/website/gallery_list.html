@@ -172,12 +172,6 @@
         {% if items %}
         <div class="gallery-grid">
             {% for item in items %}
-            {#
-              data-vsrc  = 'file' | 'embed' | 'external' | ''
-              data-vfile = URL of uploaded video file (if any)
-              data-embed = embeddable iframe URL (YouTube/Vimeo)
-              data-vlink = raw external URL (TikTok/Facebook etc.)
-            #}
             <div class="gallery-card"
                  data-title="{{ item.title }}"
                  data-img="{% if item.image %}{{ item.image.url }}{% endif %}"
