@@ -143,11 +143,27 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 LANGUAGE_CODE = "en-us"
-TIME_ZONE = "UTC"  # change to 'Africa/Kampala' if you prefer local time
+TIME_ZONE = "Africa/Kampala"
 USE_I18N = True
 USE_TZ = True
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# ========== File Upload Limits ==========
+# Allow images/videos up to 50 MB (default Django limit is 2.5 MB)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 52_428_800   # 50 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 52_428_800   # 50 MB
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000
+
+# ========== Caching & Performance ==========
+# Cache static files aggressively via WhiteNoise (already set in STATICFILES_STORAGE)
+# Add a short server-side cache for repeated DB reads on high-traffic pages
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "auntenid-cache",
+    }
+}
 
 # ========== Jazzmin Admin Theme ==========
 JAZZMIN_SETTINGS = {

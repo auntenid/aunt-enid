@@ -2,55 +2,188 @@
 {% load static %}
 
 {% block title %}Gallery - {{ site_config.site_name }}{% endblock %}
+{% block description %}Photos and videos from Aunt Enid's campaign and community work across Kabale District.{% endblock %}
+{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/enid1.jpg' %}{% endblock %}
 
 {% block extra_css %}
 <style>
-/* Gallery Lightbox */
+/* ===== Gallery Lightbox ===== */
 .gallery-lightbox {
-    display:none;position:fixed;top:0;left:0;width:100%;height:100%;
-    background:rgba(0,0,0,0.93);z-index:9999;justify-content:center;align-items:center;
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.93);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
 }
-.gallery-lightbox.active { display:flex; }
+.gallery-lightbox.active { display: flex; }
+
 .lightbox-inner {
-    position:relative;max-width:92vw;max-height:90vh;display:flex;flex-direction:column;align-items:center;gap:16px;
+    position: relative;
+    max-width: 92vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    overflow-y: auto;
 }
-.lightbox-inner img { max-width:90vw;max-height:70vh;border-radius:8px;object-fit:contain; }
-.lightbox-inner iframe { width:min(860px,90vw);height:min(480px,50vh);border-radius:8px;border:none; }
+
+#lightboxMedia img {
+    max-width: 90vw;
+    max-height: 70vh;
+    border-radius: 8px;
+    object-fit: contain;
+    display: block;
+}
+
+#lightboxMedia iframe {
+    width: min(860px, 90vw);
+    height: min(480px, 50vh);
+    border-radius: 8px;
+    border: none;
+    display: block;
+}
+
+/* "Open externally" button for TikTok/Facebook etc */
+.lightbox-external-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 28px;
+    background: linear-gradient(135deg, #2E7D32, #4CAF50);
+    color: #fff;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    transition: transform .15s, box-shadow .15s;
+}
+.lightbox-external-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    color: #fff;
+}
+.lightbox-external-btn i { font-size: 20px; }
+
 .lightbox-close {
-    position:absolute;top:-40px;right:0;background:none;border:none;color:#fff;font-size:2rem;cursor:pointer;
+    position: absolute;
+    top: -44px;
+    right: 0;
+    background: rgba(255,255,255,0.1);
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    color: #fff;
+    font-size: 1.6rem;
+    width: 38px;
+    height: 38px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .2s;
 }
-.lightbox-caption { color:#ddd;font-size:15px;text-align:center;max-width:600px; }
-.lightbox-share { display:flex;gap:10px;flex-wrap:wrap;justify-content:center; }
+.lightbox-close:hover { background: rgba(255,255,255,0.25); }
+
+.lightbox-caption {
+    color: #ddd;
+    font-size: 15px;
+    text-align: center;
+    max-width: 600px;
+    line-height: 1.5;
+}
+
+.lightbox-share {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
 .lightbox-share a {
-    display:inline-flex;align-items:center;gap:6px;padding:6px 14px;
-    border-radius:6px;text-decoration:none;color:#fff;font-size:13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    transition: opacity .15s;
 }
+.lightbox-share a:hover { opacity: .85; }
+
+/* ===== Gallery Grid ===== */
 .gallery-grid {
-    display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
 }
+
 .gallery-card {
-    border-radius:12px;overflow:hidden;background:#fff;
-    box-shadow:0 2px 12px rgba(0,0,0,0.08);cursor:pointer;
-    transition:transform .2s,box-shadow .2s;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    cursor: pointer;
+    transition: transform .2s, box-shadow .2s;
+    position: relative;
 }
-.gallery-card:hover { transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,0.14); }
+.gallery-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.14); }
+
 .gallery-card-thumb {
-    position:relative;width:100%;aspect-ratio:4/3;overflow:hidden;background:#111;
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+    background: #111;
 }
-.gallery-card-thumb img { width:100%;height:100%;object-fit:cover;display:block; }
-.gallery-card-thumb .video-badge {
-    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+.gallery-card-thumb img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
 }
-.video-badge i { font-size:3rem;color:rgba(255,255,255,0.9);filter:drop-shadow(0 2px 6px rgba(0,0,0,.5)); }
-.gallery-card-body { padding:14px; }
-.gallery-card-body h4 { font-size:15px;margin-bottom:6px;color:#1a1a2e; }
-.gallery-card-body p { font-size:13px;color:#666;margin:0; }
+.video-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.35);
+    gap: 6px;
+}
+.video-overlay i { font-size: 3rem; color: rgba(255,255,255,0.92); filter: drop-shadow(0 2px 6px rgba(0,0,0,.5)); }
+.video-overlay span {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #fff;
+    background: rgba(0,0,0,0.5);
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.gallery-card-body { padding: 14px; }
+.gallery-card-body h4 { font-size: 15px; margin-bottom: 6px; color: #1a1a2e; line-height: 1.3; }
+.gallery-card-body p { font-size: 13px; color: #666; margin: 0; }
 .gallery-type-badge {
-    display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;
-    margin-bottom:6px;
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 6px;
 }
-.badge-image { background:#e8f5e9;color:#2E7D32; }
-.badge-video { background:#e3f2fd;color:#1565C0; }
+.badge-image { background: #e8f5e9; color: #2E7D32; }
+.badge-video { background: #e3f2fd; color: #1565C0; }
 </style>
 {% endblock %}
 
@@ -58,7 +191,7 @@
 <section class="news" style="padding-top:120px;">
     <div class="container">
         <div class="section-header">
-            <h2>Photo & Video Gallery</h2>
+            <h2>Photo &amp; Video Gallery</h2>
             <p>Moments from Aunt Enid's campaign, community activities, and events across Kabale District</p>
         </div>
 
@@ -87,15 +220,17 @@
         {% if items %}
         <div class="gallery-grid">
             {% for item in items %}
+            {# Use data-* attributes so special characters in URLs never break onclick #}
             <div class="gallery-card"
-                 onclick="openLightbox('{{ item.id }}',
-                    '{{ item.title|escapejs }}',
-                    '{% if item.image %}{{ item.image.url }}{% endif %}',
-                    '{{ item.embed_url|escapejs }}',
-                    '{{ item.media_type }}',
-                    '{{ item.caption|escapejs }}',
-                    '{{ request.scheme }}://{{ request.get_host }}{% url 'website:gallery_list' %}?item={{ item.id }}'
-                )">
+                 data-id="{{ item.id }}"
+                 data-title="{{ item.title }}"
+                 data-img="{% if item.image %}{{ item.image.url }}{% endif %}"
+                 data-embed="{{ item.embed_url }}"
+                 data-video-url="{{ item.video_url }}"
+                 data-type="{{ item.media_type }}"
+                 data-caption="{{ item.caption }}"
+                 data-share-url="{{ request.scheme }}://{{ request.get_host }}{% url 'website:gallery_list' %}?item={{ item.id }}"
+                 onclick="openLightboxFromCard(this)">
                 <div class="gallery-card-thumb">
                     {% if item.image %}
                     <img src="{{ item.image.url }}" alt="{{ item.title }}" loading="lazy">
@@ -103,7 +238,10 @@
                     <img src="{% static 'images/enid1.jpg' %}" alt="{{ item.title }}" loading="lazy">
                     {% endif %}
                     {% if item.media_type == 'video' %}
-                    <div class="video-badge"><i class="fas fa-play-circle"></i></div>
+                    <div class="video-overlay">
+                        <i class="fas fa-play-circle"></i>
+                        <span>Watch Video</span>
+                    </div>
                     {% endif %}
                 </div>
                 <div class="gallery-card-body">
@@ -144,9 +282,9 @@
 </section>
 
 <!-- Lightbox Modal -->
-<div class="gallery-lightbox" id="galleryLightbox">
+<div class="gallery-lightbox" id="galleryLightbox" role="dialog" aria-modal="true" aria-label="Media viewer">
     <div class="lightbox-inner">
-        <button class="lightbox-close" onclick="closeLightbox()" title="Close">&times;</button>
+        <button class="lightbox-close" onclick="closeLightbox()" title="Close (Esc)">&times;</button>
         <div id="lightboxMedia"></div>
         <div class="lightbox-caption" id="lightboxCaption"></div>
         <div class="lightbox-share" id="lightboxShare"></div>
@@ -156,30 +294,150 @@
 
 {% block extra_js %}
 <script>
-function openLightbox(id, title, imgUrl, embedUrl, mediaType, caption, pageUrl) {
-    var lb = document.getElementById('galleryLightbox');
+/* ====================================================
+   Gallery Lightbox — reads from data-* attributes so
+   special characters in URLs never break the JS call.
+   ==================================================== */
+
+function isEmbeddable(embedUrl, videoUrl) {
+    // Only YouTube and Vimeo can be safely embedded in iframes
+    return /youtube\.com|youtu\.be|vimeo\.com/.test(embedUrl || '') ||
+           /youtube\.com|youtu\.be|vimeo\.com/.test(videoUrl || '');
+}
+
+function detectPlatformIcon(url) {
+    if (!url) return 'fas fa-external-link-alt';
+    if (/tiktok\.com/.test(url))   return 'fab fa-tiktok';
+    if (/facebook\.com/.test(url)) return 'fab fa-facebook';
+    if (/instagram\.com/.test(url))return 'fab fa-instagram';
+    if (/twitter\.com|x\.com/.test(url)) return 'fab fa-x-twitter';
+    return 'fas fa-external-link-alt';
+}
+
+function detectPlatformLabel(url) {
+    if (!url) return 'Open Video';
+    if (/tiktok\.com/.test(url))   return 'Open on TikTok';
+    if (/facebook\.com/.test(url)) return 'Open on Facebook';
+    if (/instagram\.com/.test(url))return 'Open on Instagram';
+    if (/twitter\.com|x\.com/.test(url)) return 'Open on X';
+    return 'Open Video';
+}
+
+function openLightboxFromCard(card) {
+    var title    = card.dataset.title    || '';
+    var imgUrl   = card.dataset.img      || '';
+    var embedUrl = card.dataset.embed    || '';
+    var videoUrl = card.dataset.videoUrl || '';
+    var type     = card.dataset.type     || 'image';
+    var caption  = card.dataset.caption  || '';
+    var shareUrl = card.dataset.shareUrl || window.location.href;
+
+    openLightbox(title, imgUrl, embedUrl, videoUrl, type, caption, shareUrl);
+}
+
+function openLightbox(title, imgUrl, embedUrl, videoUrl, mediaType, caption, pageUrl) {
+    var lb    = document.getElementById('galleryLightbox');
     var media = document.getElementById('lightboxMedia');
-    var cap = document.getElementById('lightboxCaption');
+    var cap   = document.getElementById('lightboxCaption');
     var share = document.getElementById('lightboxShare');
 
-    if (mediaType === 'video' && embedUrl) {
-        media.innerHTML = '<iframe src="' + embedUrl + '" allowfullscreen allow="autoplay"></iframe>';
-    } else if (imgUrl) {
-        media.innerHTML = '<img src="' + imgUrl + '" alt="' + title + '">';
+    // Clear previous content
+    media.innerHTML = '';
+    cap.innerHTML   = '';
+    share.innerHTML = '';
+
+    /* ---- Media area ---- */
+    if (mediaType === 'video') {
+        if (isEmbeddable(embedUrl, videoUrl)) {
+            // YouTube / Vimeo → embed in iframe
+            var iframe = document.createElement('iframe');
+            iframe.src = embedUrl || videoUrl;
+            iframe.setAttribute('allowfullscreen', '');
+            iframe.setAttribute('allow', 'autoplay; fullscreen');
+            iframe.setAttribute('loading', 'lazy');
+            media.appendChild(iframe);
+        } else {
+            // TikTok, Facebook, Instagram, etc. → open externally
+            var rawVideoUrl = videoUrl || embedUrl;
+            var extBtn = document.createElement('a');
+            extBtn.href    = rawVideoUrl;
+            extBtn.target  = '_blank';
+            extBtn.rel     = 'noopener noreferrer';
+            extBtn.className = 'lightbox-external-btn';
+
+            var icon = document.createElement('i');
+            icon.className = detectPlatformIcon(rawVideoUrl);
+            var labelNode = document.createTextNode(' ' + detectPlatformLabel(rawVideoUrl));
+            extBtn.appendChild(icon);
+            extBtn.appendChild(labelNode);
+
+            // Also show thumbnail if available
+            if (imgUrl) {
+                var thumb = document.createElement('img');
+                thumb.src = imgUrl;
+                thumb.alt = title;
+                thumb.style.cssText = 'max-width:90vw;max-height:45vh;border-radius:8px;object-fit:contain;display:block;margin-bottom:12px;opacity:0.7;';
+                media.appendChild(thumb);
+            }
+            media.appendChild(extBtn);
+        }
     } else {
-        media.innerHTML = '<p style="color:#aaa;">No media available.</p>';
+        // Photo
+        if (imgUrl) {
+            var img = document.createElement('img');
+            img.src = imgUrl;
+            img.alt = title;
+            media.appendChild(img);
+        } else {
+            var noMedia = document.createElement('p');
+            noMedia.style.color = '#aaa';
+            noMedia.textContent = 'No image available.';
+            media.appendChild(noMedia);
+        }
     }
 
-    cap.innerHTML = '<strong>' + title + '</strong>' + (caption ? '<br><span>' + caption + '</span>' : '');
+    /* ---- Caption ---- */
+    var strong = document.createElement('strong');
+    strong.textContent = title;
+    cap.appendChild(strong);
+    if (caption) {
+        var br   = document.createElement('br');
+        var span = document.createElement('span');
+        span.textContent = caption;
+        cap.appendChild(br);
+        cap.appendChild(span);
+    }
 
+    /* ---- Share buttons ---- */
     var encodedTitle = encodeURIComponent(title);
-    var encodedUrl = encodeURIComponent(pageUrl);
-    share.innerHTML =
-        '<a href="https://wa.me/?text=' + encodedTitle + '%20' + encodedUrl + '" target="_blank" rel="noopener" style="background:#25D366;"><i class="fab fa-whatsapp"></i> WhatsApp</a>' +
-        '<a href="https://twitter.com/intent/tweet?text=' + encodedTitle + '&url=' + encodedUrl + '" target="_blank" rel="noopener" style="background:#000;"><i class="fab fa-x-twitter"></i> X</a>' +
-        '<a href="https://www.facebook.com/sharer/sharer.php?u=' + encodedUrl + '" target="_blank" rel="noopener" style="background:#1877F2;"><i class="fab fa-facebook"></i> Facebook</a>' +
-        '<a href="https://www.tiktok.com/share?url=' + encodedUrl + '" target="_blank" rel="noopener" style="background:#010101;"><i class="fab fa-tiktok"></i> TikTok</a>';
+    var encodedUrl   = encodeURIComponent(pageUrl);
 
+    var shareLinks = [
+        { href: 'https://wa.me/?text=' + encodedTitle + '%20' + encodedUrl,
+          bg: '#25D366', icon: 'fab fa-whatsapp', label: 'WhatsApp' },
+        { href: 'https://twitter.com/intent/tweet?text=' + encodedTitle + '&url=' + encodedUrl,
+          bg: '#000', icon: 'fab fa-x-twitter', label: 'X' },
+        { href: 'https://www.facebook.com/sharer/sharer.php?u=' + encodedUrl,
+          bg: '#1877F2', icon: 'fab fa-facebook', label: 'Facebook' },
+        { href: 'https://www.tiktok.com/share?url=' + encodedUrl,
+          bg: '#010101', icon: 'fab fa-tiktok', label: 'TikTok' },
+    ];
+
+    shareLinks.forEach(function(s) {
+        var a = document.createElement('a');
+        a.href   = s.href;
+        a.target = '_blank';
+        a.rel    = 'noopener noreferrer';
+        a.style.background = s.bg;
+
+        var i = document.createElement('i');
+        i.className = s.icon;
+        a.appendChild(i);
+        a.appendChild(document.createTextNode(' ' + s.label));
+        share.appendChild(a);
+    });
+
+    /* ---- Show lightbox ---- */
     lb.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
