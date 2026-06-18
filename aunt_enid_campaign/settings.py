@@ -97,11 +97,33 @@ WSGI_APPLICATION = "aunt_enid_campaign.wsgi.application"
 
 # Database - use DATABASE_URL (Railway/Heroku), individual Postgres credentials, or fall back to sqlite
 DATABASE_URL = os.getenv("DATABASE_URL")
+
+# Auto-scan environment variables for Railway-injected Postgres connection URLs
+# (e.g. POSTGRES_PRODUCTION_3638_URL or any other uniquely named service URL)
+if not DATABASE_URL:
+    for key, value in os.environ.items():
+        if (key.endswith("_URL") or "URL" in key) and ("postgres" in value or "postgresql" in value):
+            DATABASE_URL = value
+            break
+
 DB_NAME = os.getenv("DB_NAME") or os.getenv("PGDATABASE") or os.getenv("POSTGRES_DB")
 DB_USER = os.getenv("DB_USER") or os.getenv("PGUSER") or os.getenv("POSTGRES_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD") or os.getenv("PGPASSWORD") or os.getenv("POSTGRES_PASSWORD")
 DB_HOST = os.getenv("DB_HOST") or os.getenv("PGHOST") or os.getenv("POSTGRES_HOST")
 DB_PORT = os.getenv("DB_PORT") or os.getenv("PGPORT") or os.getenv("POSTGRES_PORT")
+
+# Auto-scan for uniquely-prefixed individual Postgres variables from Railway
+if not DATABASE_URL and not DB_NAME:
+    for key in os.environ:
+        if key.endswith("_HOST") and ("POSTGRES" in key or "DB" in key):
+            prefix = key[:-4]  # Extract prefix, e.g., "POSTGRES_PRODUCTION_3638_"
+            DB_HOST = os.getenv(prefix + "HOST")
+            DB_PORT = os.getenv(prefix + "PORT", "5432")
+            DB_NAME = os.getenv(prefix + "DB") or os.getenv(prefix + "DATABASE")
+            DB_USER = os.getenv(prefix + "USER")
+            DB_PASSWORD = os.getenv(prefix + "PASSWORD") or os.getenv(prefix + "PASS")
+            if DB_HOST and DB_NAME and DB_USER and DB_PASSWORD:
+                break
 
 if DATABASE_URL:
     DATABASES = {
