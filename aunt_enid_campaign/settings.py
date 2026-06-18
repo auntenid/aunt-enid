@@ -311,15 +311,20 @@ AWS_STORAGE_BUCKET_NAME = (
     or os.getenv("S3_BUCKET_NAME") 
     or "auntenid"
 )
-AWS_S3_REGION_NAME = (
-    os.getenv("AWS_S3_REGION_NAME") 
-    or os.getenv("S3_REGION") 
-    or "eu-north-1"
-)
 AWS_S3_ENDPOINT_URL = (
     os.getenv("AWS_S3_ENDPOINT_URL") 
     or os.getenv("S3_ENDPOINT")
 )
+
+# For Tigris (t3.storageapi.dev), region must default to "auto" to prevent مالform signature errors
+AWS_S3_REGION_NAME = (
+    os.getenv("AWS_S3_REGION_NAME") 
+    or os.getenv("S3_REGION") 
+    or ("auto" if AWS_S3_ENDPOINT_URL and "t3.storageapi.dev" in AWS_S3_ENDPOINT_URL else "eu-north-1")
+)
+
+# Force S3v4 signature version (strictly required by Tigris and many modern S3 storage systems)
+AWS_S3_SIGNATURE_VERSION = 's3v4'
 
 if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY:
     # Use S3-compatible storage
@@ -335,9 +340,15 @@ if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY:
         
     if AWS_S3_ENDPOINT_URL:
         storages_options["endpoint_url"] = AWS_S3_ENDPOINT_URL
-        # If custom endpoint is used, build MEDIA_URL using the endpoint url
         endpoint_clean = AWS_S3_ENDPOINT_URL.rstrip("/")
-        MEDIA_URL = f"{endpoint_clean}/{AWS_STORAGE_BUCKET_NAME}/media/"
+        if "t3.storageapi.dev" in endpoint_clean:
+            # Tigris virtual-hosted style URL: https://<bucket>.t3.storageapi.dev/media/
+            scheme = "https" if endpoint_clean.startswith("https") else "http"
+            domain = endpoint_clean.split("://")[-1]
+            MEDIA_URL = f"{scheme}://{AWS_STORAGE_BUCKET_NAME}.{domain}/media/"
+        else:
+            # Path-style fallback for MinIO/other
+            MEDIA_URL = f"{endpoint_clean}/{AWS_STORAGE_BUCKET_NAME}/media/"
     else:
         MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/media/"
 
