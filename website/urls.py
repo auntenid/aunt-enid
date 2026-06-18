@@ -25,6 +25,7 @@ urlpatterns = [
 
     # Gallery pages
     path('gallery/', views.gallery_list, name='gallery_list'),
+    path('gallery/item/<int:pk>/', views.gallery_item_detail, name='gallery_item_detail'),
 
     # SEO
     path('sitemap.xml', views.sitemap, name='sitemap'),

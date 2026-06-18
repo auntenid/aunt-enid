@@ -312,12 +312,21 @@ class Command(BaseCommand):
         ]
 
         for entry in news_articles_data:
-            article, created = NewsArticle.objects.update_or_create(
+            article, created = NewsArticle.objects.get_or_create(
                 slug=entry['slug'],
                 defaults=entry['defaults']
             )
-            action = 'created' if created else 'updated (image assigned)'
-            self.stdout.write(f'[OK] News article "{article.title}" {action}')
+            if created:
+                self.stdout.write(f'[OK] News article "{article.title}" created with image')
+            else:
+                # Only assign the fallback image if the article has NO image yet.
+                # NEVER overwrite an image the admin has manually uploaded.
+                if not article.featured_image:
+                    article.featured_image = entry['defaults']['featured_image']
+                    article.save(update_fields=['featured_image'])
+                    self.stdout.write(f'[OK] News article "{article.title}" — fallback image assigned')
+                else:
+                    self.stdout.write(f'[OK] News article "{article.title}" — image preserved ({article.featured_image.name})')
 
         # ==================== Project Categories ====================
         project_categories_data = [

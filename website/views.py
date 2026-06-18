@@ -225,3 +225,31 @@ def gallery_list(request):
     }
 
     return render(request, 'website/gallery_list.html', context)
+
+
+def gallery_item_detail(request, pk):
+    """
+    Dedicated shareable page for a single gallery item.
+    - Correct OG/Twitter thumbnail (item image or YouTube thumbnail)
+    - Auto-plays video on load
+    - Redirects to gallery list with ?autoopen=<pk> if JS is disabled
+    """
+    item = get_object_or_404(GalleryItem, pk=pk, is_active=True)
+
+    # Build the best possible OG image URL for this item
+    og_image_url = None
+    if item.image:
+        og_image_url = request.build_absolute_uri(item.image.url)
+    elif item.video_source_type() == 'embed':
+        import re
+        url = item.video_url or ''
+        yt = re.search(r'(?:youtube\.com/watch\?v=|youtu\.be/)([A-Za-z0-9_-]{11})', url)
+        if yt:
+            og_image_url = f'https://img.youtube.com/vi/{yt.group(1)}/maxresdefault.jpg'
+
+    context = {
+        'item': item,
+        'og_image_url': og_image_url,
+        'item_url': request.build_absolute_uri(),
+    }
+    return render(request, 'website/gallery_item_detail.html', context)

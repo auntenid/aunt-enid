@@ -181,7 +181,8 @@
                  data-embed="{{ item.embed_url }}"
                  data-vlink="{{ item.video_url }}"
                  data-caption="{{ item.caption }}"
-                 data-share-url="{{ request.scheme }}://{{ request.get_host }}{% url 'website:gallery_list' %}?item={{ item.id }}"
+                 data-item-id="{{ item.id }}"
+                 data-share-url="{{ request.scheme }}://{{ request.get_host }}{% url 'website:gallery_item_detail' item.id %}"
                  onclick="openLightboxFromCard(this)">
                 <div class="gallery-card-thumb">
                     {% if item.image %}
@@ -385,6 +386,18 @@ function openLightbox(title, imgUrl, mediaType, vsrc, vfileUrl, embedUrl, vlinkU
     /* ---- Share buttons ---- */
     var et = encodeURIComponent(title);
     var eu = encodeURIComponent(pageUrl);
+
+    /* "View Full Page" link first — opens the dedicated item page */
+    var viewFull = document.createElement('a');
+    viewFull.href   = pageUrl;
+    viewFull.target = '_blank';
+    viewFull.rel    = 'noopener noreferrer';
+    viewFull.style.cssText = 'background:#333;border:1px solid #555;';
+    var vfi = document.createElement('i');
+    vfi.className = 'fas fa-expand-alt';
+    viewFull.appendChild(vfi);
+    viewFull.appendChild(document.createTextNode('\u00a0View Full Page'));
+    share.appendChild(viewFull);
 
     [
         { href: 'https://wa.me/?text=' + et + '%20' + eu, bg: '#25D366', icon: 'fab fa-whatsapp',   label: 'WhatsApp' },
