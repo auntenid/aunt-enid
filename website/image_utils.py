@@ -21,8 +21,8 @@ import os
 
 from PIL import Image
 
-# Maximum longest dimension in pixels
-MAX_DIMENSION = 1920
+# Maximum longest dimension in pixels (1200px is optimal for Facebook/WhatsApp og:image)
+MAX_DIMENSION = 1200
 
 # JPEG quality (1-95). 82 gives excellent quality at ~60% smaller file size.
 JPEG_QUALITY = 82

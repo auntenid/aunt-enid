@@ -12,13 +12,6 @@
 {% block og_image_tags %}
     <meta property="og:image" content="{% if project.image %}{{ request.scheme }}://{{ request.get_host }}{{ project.image.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/enid1.jpg' %}{% endif %}">
     <meta property="og:image:secure_url" content="{% if project.image %}https://{{ request.get_host }}{{ project.image.url }}{% else %}https://{{ request.get_host }}{% static 'images/enid1.jpg' %}{% endif %}">
-    {% if project.image %}
-    <meta property="og:image:width" content="{{ project.image.width }}">
-    <meta property="og:image:height" content="{{ project.image.height }}">
-    {% else %}
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    {% endif %}
     <meta property="og:image:type" content="image/jpeg">
     <meta property="og:image:alt" content="{{ project.title }}">
 {% endblock %}
