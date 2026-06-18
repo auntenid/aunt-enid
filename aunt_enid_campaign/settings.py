@@ -150,10 +150,13 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # ========== File Upload Limits ==========
-# Allow images/videos up to 50 MB (default Django limit is 2.5 MB)
-DATA_UPLOAD_MAX_MEMORY_SIZE = 52_428_800   # 50 MB
-FILE_UPLOAD_MAX_MEMORY_SIZE = 52_428_800   # 50 MB
+# Allow images/videos up to 200 MB (default Django limit is 2.5 MB)
+# Videos from phone/laptop can easily be 100-200 MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 209_715_200   # 200 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 209_715_200   # 200 MB
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000
+# Large uploads go to a temp file instead of memory (efficient for video)
+FILE_UPLOAD_TEMP_DIR = None   # uses system temp dir; override with volume path below
 
 # ========== Caching & Performance ==========
 # Cache static files aggressively via WhiteNoise (already set in STATICFILES_STORAGE)

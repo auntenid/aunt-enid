@@ -301,7 +301,12 @@ class GalleryCategory(models.Model):
 
 
 class GalleryItem(models.Model):
-    """Model for campaign photos and videos with social sharing"""
+    """Model for campaign photos and videos with social sharing.
+    Supports three video sources:
+      1. Uploaded video file (mp4/mov/webm from phone or laptop)
+      2. YouTube / Vimeo URL  → embedded in iframe
+      3. TikTok / Facebook / other URL → opens on the platform
+    """
     MEDIA_TYPE_CHOICES = [
         ('image', 'Photo'),
         ('video', 'Video'),
@@ -310,23 +315,35 @@ class GalleryItem(models.Model):
     title = models.CharField(max_length=200)
     media_type = models.CharField(
         max_length=10, choices=MEDIA_TYPE_CHOICES, default='image',
-        help_text="Select 'Photo' to upload an image, 'Video' to paste a video URL"
+        help_text="Select 'Photo' for an image, 'Video' for a video file or link."
     )
     image = models.ImageField(
-        upload_to='gallery/', blank=True, null=True,
-        help_text="Upload a photo. For videos, upload a thumbnail image here."
+        upload_to='gallery/images/', blank=True, null=True,
+        help_text="Upload a photo (or a thumbnail for videos uploaded by URL)."
     )
+    # ---- Direct video file upload (phone/laptop) ----
+    video_file = models.FileField(
+        upload_to='gallery/videos/', blank=True, null=True,
+        help_text=(
+            "Upload a video directly from your phone or laptop (MP4, MOV, WebM, AVI — max 200 MB). "
+            "Leave blank if you are using a video link below instead."
+        )
+    )
+    # ---- External video link ----
     video_url = models.URLField(
         blank=True,
-        help_text="Paste a YouTube, Vimeo, Facebook or TikTok video URL (only for Video type)"
+        help_text=(
+            "OR paste a YouTube, Vimeo, TikTok, or Facebook video link. "
+            "Leave blank if you uploaded a video file above."
+        )
     )
-    caption = models.TextField(blank=True, help_text="Optional caption shown under the media")
+    caption = models.TextField(blank=True, help_text="Optional caption shown under the media.")
     category = models.ForeignKey(
         GalleryCategory, on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='items', help_text="Select the gallery category"
+        related_name='items', help_text="Select the gallery category."
     )
-    date_taken = models.DateField(null=True, blank=True, help_text="Date the photo/video was taken")
-    is_featured = models.BooleanField(default=False, help_text="Feature on gallery landing page")
+    date_taken = models.DateField(null=True, blank=True, help_text="Date the photo/video was taken.")
+    is_featured = models.BooleanField(default=False, help_text="Feature on gallery landing page.")
     is_active = models.BooleanField(default=True)
     order = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -339,14 +356,33 @@ class GalleryItem(models.Model):
     def __str__(self):
         return self.title
 
+    @property
+    def video_file_url(self):
+        """Return the URL of the uploaded video file, or empty string."""
+        if self.video_file and hasattr(self.video_file, 'url'):
+            return self.video_file.url
+        return ''
+
     def embed_url(self):
-        """Convert a YouTube/Vimeo URL to an embeddable iframe URL"""
+        """Return an embeddable iframe src for YouTube/Vimeo, else return the raw URL."""
         import re
         url = self.video_url or ''
         yt = re.search(r'(?:youtube\.com/watch\?v=|youtu\.be/)([A-Za-z0-9_-]{11})', url)
         if yt:
-            return f"https://www.youtube.com/embed/{yt.group(1)}"
+            return f"https://www.youtube.com/embed/{yt.group(1)}?autoplay=1"
         vm = re.search(r'vimeo\.com/(\d+)', url)
         if vm:
-            return f"https://player.vimeo.com/video/{vm.group(1)}"
+            return f"https://player.vimeo.com/video/{vm.group(1)}?autoplay=1"
         return url
+
+    def video_source_type(self):
+        """Return 'file', 'embed', or 'external' to guide the template/lightbox."""
+        if self.video_file:
+            return 'file'
+        import re
+        url = self.video_url or ''
+        if re.search(r'youtube\.com|youtu\.be|vimeo\.com', url):
+            return 'embed'
+        if url:
+            return 'external'
+        return ''

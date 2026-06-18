@@ -212,7 +212,7 @@ class GalleryCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(GalleryItem)
 class GalleryItemAdmin(admin.ModelAdmin):
-    list_display = ['title', 'media_type', 'category', 'date_taken', 'is_featured', 'is_active', 'thumbnail_preview']
+    list_display = ['title', 'media_type', 'video_source_badge', 'category', 'date_taken', 'is_featured', 'is_active', 'thumbnail_preview']
     list_filter = ['media_type', 'category', 'is_featured', 'is_active']
     search_fields = ['title', 'caption']
     ordering = ['-date_taken', '-created_at']
@@ -221,9 +221,30 @@ class GalleryItemAdmin(admin.ModelAdmin):
         ('Item Information', {
             'fields': ('title', 'media_type', 'category', 'caption')
         }),
-        ('Media Upload', {
-            'fields': ('image', 'video_url'),
-            'description': 'Upload a photo, OR paste a video URL for videos. For videos, you can also upload a thumbnail image.'
+        ('Photo Upload', {
+            'fields': ('image',),
+            'description': (
+                'For PHOTOS: upload the image here. '
+                'For VIDEOS: optionally upload a thumbnail image that shows before the video plays.'
+            ),
+        }),
+        ('Video — Upload from Phone / Laptop', {
+            'fields': ('video_file',),
+            'description': (
+                '📱 OPTION A — Upload a video file directly from your phone or laptop. '
+                'Supported formats: MP4, MOV, WebM, AVI (max 200 MB). '
+                'Leave blank if using a link below.'
+            ),
+            'classes': ('collapse',),
+        }),
+        ('Video — Use an External Link', {
+            'fields': ('video_url',),
+            'description': (
+                '🔗 OPTION B — Paste a YouTube, Vimeo, TikTok, or Facebook video link. '
+                'Leave blank if you uploaded a file above. '
+                'YouTube and Vimeo play inside the site; TikTok/Facebook open on their app.'
+            ),
+            'classes': ('collapse',),
         }),
         ('Details', {
             'fields': ('date_taken',)
@@ -233,11 +254,26 @@ class GalleryItemAdmin(admin.ModelAdmin):
         }),
     )
 
+    def video_source_badge(self, obj):
+        if obj.media_type != 'video':
+            return '-'
+        src = obj.video_source_type()
+        if src == 'file':
+            return format_html('<span style="color:#27ae60;font-weight:600;">&#128250; Uploaded File</span>')
+        if src == 'embed':
+            return format_html('<span style="color:#1565C0;font-weight:600;">&#127909; YouTube/Vimeo</span>')
+        if src == 'external':
+            return format_html('<span style="color:#e67e22;font-weight:600;">&#128279; External Link</span>')
+        return format_html('<span style="color:#aaa;">No video yet</span>')
+    video_source_badge.short_description = "Video Source"
+
     def thumbnail_preview(self, obj):
         if obj.image:
             return format_html('<img src="{}" style="height:50px;border-radius:4px;" />', obj.image.url)
+        if obj.video_file:
+            return format_html('<span style="color:#27ae60;font-weight:600;">&#128250; File uploaded</span>')
         if obj.video_url:
-            return format_html('<span style="color:#27ae60;"><i class="fas fa-video"></i> Video</span>')
+            return format_html('<span style="color:#1565C0;">&#127760; Link</span>')
         return '-'
     thumbnail_preview.short_description = "Preview"
 
