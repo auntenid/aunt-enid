@@ -18,9 +18,9 @@
             <article class="news-item {% if article.is_featured %}dynamic-story{% endif %}">
                 <div class="news-image">
                     {% if article.featured_image %}
-                    <img src="{{ article.featured_image.url }}" alt="{{ article.image_alt_text|default:article.title }}" class="news-photo">
+                    <img src="{{ article.featured_image.url }}" alt="{{ article.image_alt_text|default:article.title }}" class="news-photo" loading="lazy">
                     {% else %}
-                    <img src="{% static 'images/enid1.jpg' %}" alt="{{ article.title }}" class="news-photo">
+                    <img src="{% static 'images/enid1.jpg' %}" alt="{{ article.title }}" class="news-photo" loading="lazy">
                     {% endif %}
                     <div class="news-date">
                         <span class="day">{{ article.published_date|date:"d" }}</span>

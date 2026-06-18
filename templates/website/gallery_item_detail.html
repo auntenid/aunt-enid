@@ -10,13 +10,26 @@
 {% block og_type %}{% if item.media_type == 'video' %}video{% else %}article{% endif %}{% endblock %}
 {% block og_url %}{{ item_url }}{% endblock %}
 
-{# Use the item's own thumbnail — falls back to site image only if nothing else available #}
-{% block og_image %}{% if og_image_url %}{{ og_image_url }}{% elif item.image %}{{ request.scheme }}://{{ request.get_host }}{{ item.image.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/enid1.jpg' %}{% endif %}{% endblock %}
-{% block og_image_alt %}{{ item.title }}{% endblock %}
+{% block og_image_tags %}
+    <meta property="og:image" content="{% if og_image_url %}{{ og_image_url }}{% elif item.image %}{{ request.scheme }}://{{ request.get_host }}{{ item.image.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/enid1.jpg' %}{% endif %}">
+    <meta property="og:image:secure_url" content="{% if og_image_url %}{{ og_image_url }}{% elif item.image %}https://{{ request.get_host }}{{ item.image.url }}{% else %}https://{{ request.get_host }}{% static 'images/enid1.jpg' %}{% endif %}">
+    {% if item.image %}
+    <meta property="og:image:width" content="{{ item.image.width }}">
+    <meta property="og:image:height" content="{{ item.image.height }}">
+    {% else %}
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    {% endif %}
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image:alt" content="{{ item.title }}">
+{% endblock %}
 
 {% block twitter_title %}{{ item.title }}{% endblock %}
 {% block twitter_description %}{{ item.caption|default:"Watch this video from Aunt Enid's campaign" }}{% endblock %}
-{% block twitter_image %}{% if og_image_url %}{{ og_image_url }}{% elif item.image %}{{ request.scheme }}://{{ request.get_host }}{{ item.image.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/enid1.jpg' %}{% endif %}{% endblock %}
+{% block twitter_image_tags %}
+    <meta name="twitter:image" content="{% if og_image_url %}{{ og_image_url }}{% elif item.image %}{{ request.scheme }}://{{ request.get_host }}{{ item.image.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/enid1.jpg' %}{% endif %}">
+    <meta name="twitter:image:alt" content="{{ item.title }}">
+{% endblock %}
 
 {% block extra_css %}
 <style>

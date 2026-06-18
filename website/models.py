@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.urls import reverse
 from django.utils.text import slugify
+from .image_utils import compress_image_field
 
 
 class NewsArticle(models.Model):
@@ -44,6 +45,8 @@ class NewsArticle(models.Model):
         if not self.slug:
             self.slug = slugify(self.title)
         super().save(*args, **kwargs)
+        # Auto-compress uploaded images so they load fast
+        compress_image_field(self.featured_image)
 
     def get_absolute_url(self):
         return reverse('website:article_detail', kwargs={'slug': self.slug})
@@ -273,6 +276,8 @@ class ImpactProject(models.Model):
         if not self.slug:
             self.slug = slugify(self.title)
         super().save(*args, **kwargs)
+        # Auto-compress uploaded images so they load fast
+        compress_image_field(self.image)
 
     def get_absolute_url(self):
         return reverse('website:impact_detail', kwargs={'slug': self.slug})
@@ -386,3 +391,8 @@ class GalleryItem(models.Model):
         if url:
             return 'external'
         return ''
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Compress the thumbnail/photo image (never the video_file itself)
+        compress_image_field(self.image)

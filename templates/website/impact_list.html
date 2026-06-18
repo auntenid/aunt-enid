@@ -31,9 +31,9 @@
             <article class="news-item">
                 <div class="news-image">
                     {% if project.image %}
-                    <img src="{{ project.image.url }}" alt="{{ project.title }}" class="news-photo">
+                    <img src="{{ project.image.url }}" alt="{{ project.title }}" class="news-photo" loading="lazy">
                     {% else %}
-                    <img src="{% static 'images/enid1.jpg' %}" alt="{{ project.title }}" class="news-photo">
+                    <img src="{% static 'images/enid1.jpg' %}" alt="{{ project.title }}" class="news-photo" loading="lazy">
                     {% endif %}
                     {% if project.category %}
                     <div class="news-date">

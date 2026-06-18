@@ -20,6 +20,10 @@ SECRET_KEY = os.getenv(
 # DEBUG from environment (default True for local/dev). Set to 'False' in production.
 DEBUG = os.getenv("DJANGO_DEBUG", "True") == "True"
 
+# Security Proxy Headers for Railway/SSL termination
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+
 # Hosts - allow from environment or use defaults (strictly auto-allows all hosts by default)
 _allowed = os.getenv("DJANGO_ALLOWED_HOSTS", "")
 ALLOWED_HOSTS = (
