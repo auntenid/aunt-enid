@@ -6,7 +6,6 @@ class SecurityManager {
 
     init() {
         this.setupCSP();
-        this.setupXSSProtection();
         this.setupCSRFProtection();
         this.setupInputValidation();
         this.setupRateLimiting();
@@ -33,35 +32,12 @@ class SecurityManager {
         document.head.appendChild(meta);
     }
 
-    // XSS Protection
+    // XSS Protection header (meta only)
     setupXSSProtection() {
-        // Sanitize all user inputs
-        this.sanitizeInputs();
-        
-        // Add XSS protection header
         const meta = document.createElement('meta');
         meta.setAttribute('http-equiv', 'X-XSS-Protection');
         meta.setAttribute('content', '1; mode=block');
         document.head.appendChild(meta);
-    }
-
-    sanitizeInputs() {
-        // Override innerHTML to sanitize content
-        const originalInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
-        
-        Object.defineProperty(Element.prototype, 'innerHTML', {
-            set: function(value) {
-                const sanitized = SecurityManager.sanitizeHTML(value);
-                originalInnerHTML.set.call(this, sanitized);
-            },
-            get: originalInnerHTML.get
-        });
-    }
-
-    static sanitizeHTML(html) {
-        const div = document.createElement('div');
-        div.textContent = html;
-        return div.innerHTML;
     }
 
     // CSRF Protection
