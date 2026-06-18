@@ -33,28 +33,32 @@ MIN_SIZE_TO_COMPRESS = 100 * 1024  # 100 KB
 
 def compress_image_field(image_field):
     """
-    Compress and resize an ImageField's uploaded file in-place.
+    Compress and resize an ImageField's uploaded file in-place using Django's storage API.
 
-    Call this after saving the model (the file must already be on disk).
+    This works for both local storage and cloud storage backends (like AWS S3).
     Returns True if the image was recompressed, False if skipped.
     """
-    if not image_field:
+    if not image_field or not image_field.name:
         return False
 
     try:
-        file_path = image_field.path
-    except (ValueError, AttributeError):
-        return False
+        # Avoid compressing very small files
+        try:
+            if image_field.size < MIN_SIZE_TO_COMPRESS:
+                return False
+        except (ValueError, AttributeError, OSError):
+            return False
 
-    if not os.path.exists(file_path):
-        return False
+        # Open the image file using Django's storage API
+        storage = image_field.storage
+        try:
+            with storage.open(image_field.name, 'rb') as f:
+                img_data = f.read()
+        except Exception:
+            return False
 
-    file_size = os.path.getsize(file_path)
-    if file_size < MIN_SIZE_TO_COMPRESS:
-        return False  # Already small enough
-
-    try:
-        with Image.open(file_path) as img:
+        # Read into PIL
+        with Image.open(io.BytesIO(img_data)) as img:
             original_format = (img.format or 'JPEG').upper()
             original_mode = img.mode
 
@@ -81,14 +85,16 @@ def compress_image_field(image_field):
                 new_size = (int(w * ratio), int(h * ratio))
                 img = img.resize(new_size, Image.LANCZOS)
 
-            # Save to buffer first, then write to disk only if smaller
+            # Save to buffer
             buf = io.BytesIO()
             img.save(buf, format=out_format, **save_kwargs)
             compressed_bytes = buf.getvalue()
 
-            if len(compressed_bytes) < file_size:
-                with open(file_path, 'wb') as f:
-                    f.write(compressed_bytes)
+            # Only overwrite if it actually saved space
+            if len(compressed_bytes) < len(img_data):
+                from django.core.files.base import ContentFile
+                storage.delete(image_field.name)
+                storage.save(image_field.name, ContentFile(compressed_bytes))
                 return True
 
     except Exception:

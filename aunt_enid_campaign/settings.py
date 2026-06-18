@@ -269,30 +269,54 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
-# ========== Media Storage (local filesystem) ==========
-# Served via urls.py re_path in both DEBUG and production.
-MEDIA_URL = "/media/"
+# ========== Media Storage (S3 or local filesystem) ==========
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME", "auntenid")
+AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "eu-north-1")
 
-# Check if we are running on Railway with a volume attached
-RAILWAY_VOLUME_PATH = os.getenv("RAILWAY_VOLUME_MOUNT_PATH")
-if RAILWAY_VOLUME_PATH:
-    MEDIA_ROOT = Path(RAILWAY_VOLUME_PATH) / "media"
-    MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
-
-    # Always copy repo media files to the volume so seeded images are never lost
-    # after a redeploy.  User-uploaded files that only exist on the volume
-    # (not in the repo) are left untouched because os.walk only visits the repo tree.
-    repo_media_dir = BASE_DIR / "media"
-    if repo_media_dir.exists() and repo_media_dir != MEDIA_ROOT:
-        import shutil
-        for root, dirs, files in os.walk(repo_media_dir):
-            rel_path = Path(root).relative_to(repo_media_dir)
-            dest_dir = MEDIA_ROOT / rel_path
-            dest_dir.mkdir(parents=True, exist_ok=True)
-            for file in files:
-                src_file = Path(root) / file
-                dest_file = dest_dir / file
-                # Always overwrite repo-tracked files so latest version is used
-                shutil.copy2(src_file, dest_file)
+if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY:
+    # Use AWS S3 for media files
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+            "OPTIONS": {
+                "bucket_name": AWS_STORAGE_BUCKET_NAME,
+                "region_name": AWS_S3_REGION_NAME,
+                "querystring_auth": False,
+                "file_overwrite": False,
+                "location": "media",
+            },
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+        },
+    }
+    # S3 Media URL
+    MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/media/"
 else:
-    MEDIA_ROOT = BASE_DIR / "media"
+    # Fallback to local filesystem
+    MEDIA_URL = "/media/"
+    # Check if we are running on Railway with a volume attached
+    RAILWAY_VOLUME_PATH = os.getenv("RAILWAY_VOLUME_MOUNT_PATH")
+    if RAILWAY_VOLUME_PATH:
+        MEDIA_ROOT = Path(RAILWAY_VOLUME_PATH) / "media"
+        MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
+
+        # Always copy repo media files to the volume so seeded images are never lost
+        # after a redeploy.  User-uploaded files that only exist on the volume
+        # (not in the repo) are left untouched because os.walk only visits the repo tree.
+        repo_media_dir = BASE_DIR / "media"
+        if repo_media_dir.exists() and repo_media_dir != MEDIA_ROOT:
+            import shutil
+            for root, dirs, files in os.walk(repo_media_dir):
+                rel_path = Path(root).relative_to(repo_media_dir)
+                dest_dir = MEDIA_ROOT / rel_path
+                dest_dir.mkdir(parents=True, exist_ok=True)
+                for file in files:
+                    src_file = Path(root) / file
+                    dest_file = dest_dir / file
+                    # Always overwrite repo-tracked files so latest version is used
+                    shutil.copy2(src_file, dest_file)
+    else:
+        MEDIA_ROOT = BASE_DIR / "media"
